@@ -16,7 +16,16 @@
       "Bash(node *)",
       "Bash(curl *)",
       "Bash(npx tsc *)",
-      "WebFetch(domain:static.intoss.app)"
+      "WebFetch(domain:static.intoss.app)",
+      "Bash(git stash *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm -rf --cached --ignore-unmatch \\\\ *)",
+      "Bash(xargs -I{} git update-ref -d {})",
+      "Bash(git reflog *)",
+      "Bash(git gc *)",
+      "Bash(git push *)",
+      "Bash(gh api *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

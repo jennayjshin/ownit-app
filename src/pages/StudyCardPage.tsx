@@ -198,14 +198,14 @@ export function StudyCardPage({
   if (isCompleted) {
     return (
       <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px 100px" }}>
           <p style={{ fontSize: 48, marginBottom: 16 }}>🎉</p>
           <p style={{ fontSize: 22, fontWeight: 700, color: "#191f28", marginBottom: 8 }}>오늘의 학습 완료!</p>
           <p style={{ fontSize: 15, color: "#8b95a1" }}>
             쉬워요 {easyCount}개 · 어려워요 {hardCount}개
           </p>
         </div>
-        <div style={{ padding: "0 24px 40px", display: "flex", gap: 12 }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "16px 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom))", background: "#fff", display: "flex", gap: 12 }}>
           <Button size="xlarge" variant="weak" style={{ flex: 1 }} onClick={onComplete}>
             끝내기
           </Button>

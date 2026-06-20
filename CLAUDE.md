@@ -1,2 +1,2 @@
-@docs/skills/apps-in-toss.md
-@docs/skills/tds-mobile.md
+@context/apps-in-toss.md
+@context/tds-mobile.md
