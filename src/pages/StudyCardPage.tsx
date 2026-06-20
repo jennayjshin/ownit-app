@@ -221,17 +221,8 @@ export function StudyCardPage({
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* 헤더: X(좌) | 1/5(중앙) | EN/KR(우) */}
-      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", height: 56, paddingLeft: 8, paddingRight: 8 }}>
-        <button
-          onClick={onBack}
-          style={{ position: "absolute", left: 8, background: "none", border: "none", padding: 8, cursor: "pointer", display: "flex", alignItems: "center" }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+      {/* 서브 헤더: 진행 카운터(중앙) | EN/KR 토글(우) */}
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", height: 48, paddingLeft: 16, paddingRight: 8 }}>
         <span style={{ fontSize: 17, color: "#8b95a1", fontWeight: 500 }}>
           {currentIndex + 1} / {sentences.length}
         </span>
@@ -271,7 +262,7 @@ export function StudyCardPage({
 
       {/* 카드 */}
       <div
-        style={{ flex: 1, padding: "0 24px", display: "flex", flexDirection: "column" }}
+        style={{ flex: 1, padding: "0 24px", paddingBottom: "calc(24px + env(safe-area-inset-bottom))", display: "flex", flexDirection: "column" }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
@@ -385,18 +376,6 @@ export function StudyCardPage({
         </div>
       </div>
 
-      {/* 배너 광고 영역 */}
-      <div style={{
-        margin: "16px 24px 40px",
-        height: 64,
-        background: "#f2f4f6",
-        borderRadius: 12,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
-        <p style={{ fontSize: 12, color: "#b0b8c1" }}>광고 영역</p>
-      </div>
     </div>
   );
 }

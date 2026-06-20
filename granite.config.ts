@@ -5,13 +5,17 @@ export default defineConfig({
   brand: {
     displayName: "온잇(OwnIt)",
     primaryColor: "#3182f6",
-    icon: "https://static.toss.im/appsintoss/37105/e771990a-430e-4edf-ac20-605d740a1705.png",
+    icon: "https://static.toss.im/appsintoss/37105/35d9c35c-5c5b-4356-8877-a2af82c463ef.png",
+  },
+  navigationBar: {
+    withBackButton: true,
+    withHomeButton: false,
   },
   web: {
     host: "localhost",
     port: 5173,
     commands: {
-      dev: "vite dev",
+      dev: "vite --host",
       build: "vite build",
     },
   },

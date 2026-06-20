@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { requestNotificationAgreement } from "@apps-in-toss/web-framework";
 import { updateUser } from "../lib/db";
+import { supabase } from "../lib/supabase";
 import type { Category } from "../types/database";
+import { AlertModal } from "../components/AlertModal";
 import { TermsPage } from "./TermsPage";
 
 const CATEGORIES: Category[] = [
@@ -63,10 +66,12 @@ export interface SettingsUpdate {
   study_reason?: string;
   daily_goal?: number;
   preferred_categories?: Category[];
+  email?: string;
 }
 
 interface SettingsPageProps {
   userId: string;
+  tossUserKey: string | null;
   studyReason: string;
   dailyGoal: number;
   preferredCategories: Category[];
@@ -75,6 +80,7 @@ interface SettingsPageProps {
 
 export function SettingsPage({
   userId,
+  tossUserKey,
   studyReason,
   dailyGoal,
   preferredCategories,
@@ -84,6 +90,9 @@ export function SettingsPage({
   const [reasonDraft, setReasonDraft] = useState(studyReason);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [notification, setNotification] = useState<NotificationSettings>(loadNotification);
+  const [isRequestingNotif, setIsRequestingNotif] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const notifTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showTerms, setShowTerms] = useState(false);
   const [showFinalComplete, setShowFinalComplete] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -152,6 +161,56 @@ export function SettingsPage({
     localStorage.setItem("ownit_notification", JSON.stringify(next));
   };
 
+  const sendRoutineNotification = async (key: string, hour: string, minute: string) => {
+    await supabase.functions.invoke("send-notification", {
+      body: { tossUserKey: key, context: { time: `${hour}:${minute}` } },
+    });
+  };
+
+  const handleNotificationToggle = (enable: boolean) => {
+    if (!enable) {
+      saveNotification({ enabled: false });
+      return;
+    }
+    if (isRequestingNotif) return;
+    setIsRequestingNotif(true);
+
+    let cleanupFn: (() => void) | undefined;
+
+    const abort = (showAlert = false) => {
+      if (notifTimeoutRef.current) clearTimeout(notifTimeoutRef.current);
+      try { cleanupFn?.(); } catch {}
+      setIsRequestingNotif(false);
+      if (showAlert) setAlertMessage("잠시 뒤에 다시 시도해주세요.");
+    };
+
+    // Set timeout before calling requestNotificationAgreement so it always fires
+    // even if the API throws synchronously (e.g. no Toss bridge in local dev)
+    notifTimeoutRef.current = setTimeout(() => abort(true), 5000);
+
+    try {
+      cleanupFn = requestNotificationAgreement({
+        options: { templateCode: "dj-nativefit-routine" },
+        onEvent: ({ type }) => {
+          abort();
+          if (type === "newAgreement" || type === "alreadyAgreed") {
+            saveNotification({ enabled: true });
+            if (tossUserKey) {
+              sendRoutineNotification(tossUserKey, notification.hour, notification.minute)
+                .catch(console.error);
+            }
+          }
+        },
+        onError: (error) => {
+          abort();
+          console.error("[notification agreement]", error);
+        },
+      });
+    } catch {
+      abort(true);
+    }
+  };
+
   const toggleNotifDay = (i: number) => {
     const days = notification.days.includes(i)
       ? notification.days.filter((d) => d !== i)
@@ -164,6 +223,9 @@ export function SettingsPage({
 
   return (
     <div style={{ background: "#f9fafb", minHeight: "100vh", paddingBottom: 100 }}>
+      {alertMessage && (
+        <AlertModal message={alertMessage} onConfirm={() => setAlertMessage(null)} />
+      )}
       {/* Header */}
       <div style={{ background: "#ffffff", padding: "20px 24px 16px", borderBottom: "1px solid #e5e8eb" }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: "#191f28", margin: 0 }}>설정</h1>
@@ -340,10 +402,15 @@ export function SettingsPage({
       {/* 루틴 알림 */}
       <SettingsSection title="루틴 알림">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 15, color: "#333d4b" }}>알림 받기</span>
+          <span style={{ fontSize: 15, color: "#333d4b" }}>
+            알림 받기
+            {isRequestingNotif && (
+              <span style={{ fontSize: 12, color: "#8b95a1", marginLeft: 8 }}>동의 요청 중...</span>
+            )}
+          </span>
           <ToggleSwitch
-            enabled={notification.enabled}
-            onChange={(v) => saveNotification({ enabled: v })}
+            enabled={notification.enabled || isRequestingNotif}
+            onChange={handleNotificationToggle}
           />
         </div>
 

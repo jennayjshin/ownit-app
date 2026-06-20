@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { appLogin } from "@apps-in-toss/web-framework";
+import { appLogin, TossAds } from "@apps-in-toss/web-framework";
 import { HomePage } from "./pages/HomePage";
 import { StudyCardPage } from "./pages/StudyCardPage";
 import { ReviewPage } from "./pages/ReviewPage";
@@ -56,15 +56,15 @@ function BottomTabBar({ activeTab, onTabChange }: { activeTab: Tab; onTabChange:
   return (
     <div style={{
       position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: "calc(64px + env(safe-area-inset-bottom))",
+      bottom: "calc(env(safe-area-inset-bottom) + 12px)",
+      left: 16,
+      right: 16,
+      height: 60,
       background: "#ffffff",
-      borderTop: "1px solid #e5e8eb",
+      borderRadius: 20,
+      boxShadow: "0 4px 20px rgba(25, 31, 40, 0.12)",
       display: "flex",
       alignItems: "center",
-      paddingBottom: "env(safe-area-inset-bottom)",
     }}>
       {(["home", "review", "settings"] as Tab[]).map((tab) => (
         <button
@@ -97,6 +97,7 @@ function BottomTabBar({ activeTab, onTabChange }: { activeTab: Tab; onTabChange:
 
 function App() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [tossUserKey, setTossUserKey] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [page, setPage] = useState<Page>("tabs");
   const [activeTab, setActiveTab] = useState<Tab>("home");
@@ -107,6 +108,14 @@ function App() {
   const [dailyGoal, setDailyGoal] = useState(DEFAULT_PROFILE.dailyGoal);
   const [preferredCategories, setPreferredCategories] = useState<Category[]>(DEFAULT_PROFILE.preferredCategories);
   const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    TossAds.initialize({
+      callbacks: {
+        onInitializationFailed: (e) => console.error("[TossAds]", e),
+      },
+    });
+  }, []);
 
   useEffect(() => {
     async function initAuth() {
@@ -152,6 +161,8 @@ function App() {
 
       const uid = session.user.id;
       setUserId(uid);
+      const key = session.user.user_metadata?.toss_user_key;
+      if (key) setTossUserKey(String(key));
 
       try {
         const { data: existingUser } = await supabase
@@ -239,7 +250,7 @@ function App() {
   }
 
   return (
-    <div style={{ paddingBottom: 64 }}>
+    <div style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom))" }}>
       <div style={{ display: activeTab === "home" ? "block" : "none" }}>
         <HomePage
           userId={userId}
@@ -258,6 +269,7 @@ function App() {
       <div style={{ display: activeTab === "settings" ? "block" : "none" }}>
         <SettingsPage
           userId={userId}
+          tossUserKey={tossUserKey}
           studyReason={studyReason}
           dailyGoal={dailyGoal}
           preferredCategories={preferredCategories}
