@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import { appLogin } from "@apps-in-toss/web-framework";
 import { HomePage } from "./pages/HomePage";
 import { StudyCardPage } from "./pages/StudyCardPage";
 import { ReviewPage } from "./pages/ReviewPage";
@@ -109,19 +110,43 @@ function App() {
 
   useEffect(() => {
     async function initAuth() {
+      // 기존 세션 확인
       let { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        const { data, error } = await supabase.auth.signInAnonymously();
-        if (error) {
-          console.error("Auth error:", error);
+        // 세션 없음 → 토스 로그인
+        try {
+          const { authorizationCode, referrer } = await appLogin();
+
+          const res = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/toss-auth`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+              },
+              body: JSON.stringify({ authorizationCode, referrer }),
+            }
+          );
+          const payload = await res.json();
+          if (payload.error) throw new Error(payload.error);
+
+          const { data: otpData, error: otpErr } = await supabase.auth.verifyOtp({
+            token_hash: payload.token_hash,
+            type: "email",
+          });
+          if (otpErr) throw otpErr;
+          session = otpData.session;
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : JSON.stringify(e);
+          setAuthError(`로그인 실패: ${msg}`);
           return;
         }
-        session = data.session;
       }
 
       if (!session?.user) {
-        console.error("No user in session");
+        setAuthError("세션 생성 실패");
         return;
       }
 
@@ -129,7 +154,6 @@ function App() {
       setUserId(uid);
 
       try {
-        // Try to load existing user settings
         const { data: existingUser } = await supabase
           .from("users")
           .select("*")
@@ -137,16 +161,15 @@ function App() {
           .single();
 
         if (existingUser) {
-          // User exists — load their saved settings
           setStudyReason(existingUser.study_reason ?? DEFAULT_PROFILE.studyReason);
           setDailyGoal(existingUser.daily_goal ?? DEFAULT_PROFILE.dailyGoal);
           setPreferredCategories(existingUser.preferred_categories ?? DEFAULT_PROFILE.preferredCategories);
           setUserEmail(existingUser.email ?? "");
         } else {
-          // First time — create with defaults
+          const tossUserKey = session.user.user_metadata?.toss_user_key;
           await upsertUser({
             id: uid,
-            toss_user_id: uid,
+            toss_user_id: tossUserKey ? String(tossUserKey) : uid,
             study_reason: DEFAULT_PROFILE.studyReason,
             daily_goal: DEFAULT_PROFILE.dailyGoal,
             preferred_categories: DEFAULT_PROFILE.preferredCategories,
