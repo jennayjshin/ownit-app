@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +13,29 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
+    // Verify caller is an authenticated Supabase user
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: CORS });
+    }
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: { user }, error: authErr } = await admin.auth.getUser(token);
+    if (authErr || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: CORS });
+    }
+
     const { tossUserKey, context } = await req.json();
     if (!tossUserKey) throw new Error("tossUserKey is required");
+
+    // Ensure the caller can only push to their own toss account
+    const userTossKey = user.user_metadata?.toss_user_key;
+    if (!userTossKey || String(userTossKey) !== String(tossUserKey)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: CORS });
+    }
 
     const httpClient = Deno.createHttpClient({
       cert: Deno.env.get("TOSS_MTLS_CERT")!,

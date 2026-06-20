@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Top } from "@toss/tds-mobile";
-import { TossAds } from "@apps-in-toss/web-framework";
+import { TossAds, Analytics } from "@apps-in-toss/web-framework";
 import { getTodayStudiedCount, getAllStudiedSentences } from "../lib/db";
+import { trackAdImpression } from "../lib/pixel";
 import type { UserProgressWithSentence } from "../types/database";
 
 function Sk({ w, h, r = 8, mb = 0, style }: { w?: string | number; h: number; r?: number; mb?: number; style?: React.CSSProperties }) {
@@ -54,7 +55,7 @@ interface HomePageProps {
   userId: string;
   studyReason: string;
   dailyGoal: number;
-  onStartStudy: (offset: number) => void;
+  onStartStudy: () => void;
   onStartReview: () => void;
 }
 
@@ -97,7 +98,26 @@ export function HomePage({
         },
       }
     );
-    return () => result.destroy();
+
+    // 광고가 실제로 DOM에 그려졌을 때 impression 이벤트 발화
+    const observer = new MutationObserver(() => {
+      if (bannerRef.current?.childElementCount) {
+        trackAdImpression();
+        observer.disconnect();
+      }
+    });
+    observer.observe(bannerRef.current, { childList: true });
+
+    // attachBanner may inject children synchronously before observe() is registered
+    if (bannerRef.current.childElementCount) {
+      trackAdImpression();
+      observer.disconnect();
+    }
+
+    return () => {
+      result.destroy();
+      observer.disconnect();
+    };
   }, []);
 
   if (loading) return <HomePageSkeleton />;
@@ -126,7 +146,10 @@ export function HomePage({
             <p style={{ fontSize: 17, fontWeight: 600, color: "#191f28", marginBottom: 20 }}>
               오늘의 학습을 완료했어요
             </p>
-            <Button size="xlarge" style={{ width: "100%" }} onClick={() => onStartStudy(studiedCount)}>
+            <Button size="xlarge" style={{ width: "100%" }} onClick={() => {
+              Analytics.click({ button_name: "study_next_set", studied_count: studiedCount, daily_goal: dailyGoal });
+              onStartStudy();
+            }}>
               다음 학습 시작하기
             </Button>
           </>
@@ -135,7 +158,10 @@ export function HomePage({
             <p style={{ fontSize: 17, fontWeight: 600, color: "#191f28", marginBottom: 20 }}>
               오늘 <span style={{ color: "#3182f6" }}>{dailyGoal}문장</span>을 학습해 보세요
             </p>
-            <Button size="xlarge" style={{ width: "100%" }} onClick={() => onStartStudy(0)}>
+            <Button size="xlarge" style={{ width: "100%" }} onClick={() => {
+              Analytics.click({ button_name: "study_start", daily_goal: dailyGoal });
+              onStartStudy();
+            }}>
               시작하기
             </Button>
           </>

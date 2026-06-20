@@ -2,14 +2,14 @@ import { supabase } from './supabase';
 import type { Category, Sentence, User, UserProgress, UserProgressWithSentence } from '../types/database';
 
 // Sentences
-export async function getSentencesByCategories(categories: Category[], limit: number, offset = 0): Promise<Sentence[]> {
-  let query = supabase.from('sentences').select('*').range(offset, offset + limit - 1);
-  if (categories.length > 0) {
-    query = query.in('category', categories);
-  }
-  const { data, error } = await query;
+export async function getRandomSentences(userId: string, categories: Category[], limit: number): Promise<Sentence[]> {
+  const { data, error } = await supabase.rpc('get_random_sentences', {
+    p_user_id: userId,
+    p_categories: categories,
+    p_limit: limit,
+  });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as Sentence[];
 }
 
 // Users

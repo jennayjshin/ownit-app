@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { requestNotificationAgreement } from "@apps-in-toss/web-framework";
+import { requestNotificationAgreement, Analytics } from "@apps-in-toss/web-framework";
 import { updateUser } from "../lib/db";
 import { supabase } from "../lib/supabase";
 import type { Category } from "../types/database";
@@ -169,6 +169,7 @@ export function SettingsPage({
 
   const handleNotificationToggle = (enable: boolean) => {
     if (!enable) {
+      Analytics.click({ button_name: "notification_disable" });
       saveNotification({ enabled: false });
       return;
     }
@@ -176,8 +177,11 @@ export function SettingsPage({
     setIsRequestingNotif(true);
 
     let cleanupFn: (() => void) | undefined;
+    let aborted = false;
 
     const abort = (showAlert = false) => {
+      if (aborted) return;
+      aborted = true;
       if (notifTimeoutRef.current) clearTimeout(notifTimeoutRef.current);
       try { cleanupFn?.(); } catch {}
       setIsRequestingNotif(false);
@@ -192,8 +196,10 @@ export function SettingsPage({
       cleanupFn = requestNotificationAgreement({
         options: { templateCode: "dj-nativefit-routine" },
         onEvent: ({ type }) => {
+          if (aborted) return;
           abort();
           if (type === "newAgreement" || type === "alreadyAgreed") {
+            Analytics.click({ button_name: "notification_enable" });
             saveNotification({ enabled: true });
             if (tossUserKey) {
               sendRoutineNotification(tossUserKey, notification.hour, notification.minute)
@@ -672,7 +678,7 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
 
 export function AllCompletePage({ onBack }: { onBack: () => void }) {
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 64, display: "flex", flexDirection: "column", background: "#ffffff", zIndex: 100 }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", background: "#ffffff", zIndex: 100 }}>
       {/* 헤더 */}
       <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 8px", borderBottom: "1px solid #f2f4f6" }}>
         <button
@@ -701,7 +707,7 @@ export function AllCompletePage({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* 하단 고정 버튼 */}
-      <div style={{ padding: "0 24px 16px" }}>
+      <div style={{ padding: "0 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}>
         <p style={{ fontSize: 13, color: "#b0b8c1", textAlign: "center", marginBottom: 12 }}>
           원하는 표현이나 문장을 제안해 주세요
         </p>

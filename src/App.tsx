@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { appLogin, TossAds } from "@apps-in-toss/web-framework";
+import { appLogin, TossAds, Analytics } from "@apps-in-toss/web-framework";
 import { HomePage } from "./pages/HomePage";
 import { StudyCardPage } from "./pages/StudyCardPage";
 import { ReviewPage } from "./pages/ReviewPage";
@@ -14,7 +14,7 @@ type Tab = "home" | "review" | "settings";
 type Page = "tabs" | "study" | "review-study" | "all-complete";
 
 const DEFAULT_PROFILE = {
-  studyReason: "해외 취업을 위해 원어민처럼 말하고 싶어요",
+  studyReason: "원어민과 자유롭게 수다 떠는 그날까지",
   dailyGoal: 5,
   preferredCategories: [] as Category[],
 };
@@ -101,7 +101,6 @@ function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [page, setPage] = useState<Page>("tabs");
   const [activeTab, setActiveTab] = useState<Tab>("home");
-  const [studyOffset, setStudyOffset] = useState(0);
 
   // User settings — loaded from Supabase after auth
   const [studyReason, setStudyReason] = useState(DEFAULT_PROFILE.studyReason);
@@ -228,7 +227,6 @@ function App() {
         userId={userId}
         dailyGoal={dailyGoal}
         preferredCategories={preferredCategories}
-        initialOffset={studyOffset}
         onComplete={() => setPage("tabs")}
         onBack={() => setPage("tabs")}
         onAllComplete={() => setPage("all-complete")}
@@ -256,14 +254,20 @@ function App() {
           userId={userId}
           studyReason={studyReason}
           dailyGoal={dailyGoal}
-          onStartStudy={(offset) => { setStudyOffset(offset); setPage("study"); }}
+          onStartStudy={() => {
+            setPage("study");
+            Analytics.screen({ log_name: "study_card_screen", mode: "study" });
+          }}
           onStartReview={() => setActiveTab("review")}
         />
       </div>
       <div style={{ display: activeTab === "review" ? "block" : "none" }}>
         <ReviewPage
           userId={userId}
-          onStartReview={() => setPage("review-study")}
+          onStartReview={() => {
+            setPage("review-study");
+            Analytics.screen({ log_name: "study_card_screen", mode: "review" });
+          }}
         />
       </div>
       <div style={{ display: activeTab === "settings" ? "block" : "none" }}>
@@ -277,7 +281,13 @@ function App() {
         />
       </div>
 
-      <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomTabBar
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          Analytics.screen({ log_name: `tab_${tab}` });
+        }}
+      />
     </div>
   );
 }

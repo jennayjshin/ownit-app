@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Top } from "@toss/tds-mobile";
-import { getSentencesByCategories, getAllStudiedSentences, updateProgressAfterReview, upsertProgress, toggleFavorite } from "../lib/db";
+import { Analytics } from "@apps-in-toss/web-framework";
+import { getRandomSentences, getAllStudiedSentences, updateProgressAfterReview, upsertProgress, toggleFavorite } from "../lib/db";
 import type { Category, Sentence } from "../types/database";
 import { loadCardOrder, CARD_ORDER_KEY } from "./SettingsPage";
 import type { CardOrder } from "./SettingsPage";
@@ -10,19 +11,12 @@ interface StudyCardPageProps {
   dailyGoal: number;
   preferredCategories: Category[];
   reviewMode?: boolean;
-  initialOffset?: number;
   onComplete: () => void;
   onBack: () => void;
   onAllComplete?: () => void;
 }
 
-function speak(text: string) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
-  utterance.rate = 0.9;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
-}
+const TTS_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/tts`;
 
 function highlightKey(text: string, key: string) {
   if (!key) return <span>{text}</span>;
@@ -42,7 +36,6 @@ export function StudyCardPage({
   dailyGoal,
   preferredCategories,
   reviewMode = false,
-  initialOffset = 0,
   onComplete,
   onBack,
   onAllComplete,
@@ -58,14 +51,23 @@ export function StudyCardPage({
   const [easyCount, setEasyCount] = useState(0);
   const [hardCount, setHardCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [sentenceOffset, setSentenceOffset] = useState(initialOffset);
+  const [fetchKey, setFetchKey] = useState(0);
 
   const touchStartX = useRef<number | null>(null);
   const favoriteMap = useRef<Map<number, boolean>>(new Map());
-  const ttsTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const current = sentences[currentIndex];
   const progress = sentences.length > 0 ? (currentIndex / sentences.length) * 100 : 0;
+
+  // 카드 전환 / 언마운트 시 오디오 정리
+  useEffect(() => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setIsPlaying(false);
+  }, [currentIndex]);
+
+  useEffect(() => () => { audioRef.current?.pause(); audioRef.current = null; }, []);
 
   useEffect(() => {
     if (current) {
@@ -80,7 +82,7 @@ export function StudyCardPage({
           data.forEach((d) => favoriteMap.current.set(d.sentence_id, d.is_favorite));
           return data.map((d) => d.sentences);
         })
-      : getSentencesByCategories(preferredCategories, dailyGoal, sentenceOffset);
+      : getRandomSentences(userId, preferredCategories, dailyGoal);
     fetcher
       .then((data) => {
         setSentences(data);
@@ -90,7 +92,7 @@ export function StudyCardPage({
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [sentenceOffset, reviewMode]);
+  }, [fetchKey, reviewMode]);
 
 
   function handleTap() {
@@ -125,6 +127,7 @@ export function StudyCardPage({
   async function handleToggleFavorite() {
     const next = !isFavorite;
     setIsFavorite(next);
+    Analytics.click({ button_name: "card_favorite", is_favorite: next, sentence_id: current.id });
     favoriteMap.current.set(current.id, next);
     if (next) {
       // 즐겨찾기 추가 = 어려운 문장으로 기록 (스와이프 안 하고 끄면 hard로 남음)
@@ -161,7 +164,7 @@ export function StudyCardPage({
   }
 
   function handleNextSet() {
-    setSentenceOffset((prev) => prev + dailyGoal);
+    setFetchKey((k) => k + 1);
     setCurrentIndex(0);
     setIsFlipped(false);
     setIsFavorite(false);
@@ -206,10 +209,16 @@ export function StudyCardPage({
           </p>
         </div>
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "16px 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom))", background: "#fff", display: "flex", gap: 12 }}>
-          <Button size="xlarge" variant="weak" style={{ flex: 1 }} onClick={onComplete}>
+          <Button size="xlarge" variant="weak" style={{ flex: 1 }} onClick={() => {
+            Analytics.click({ button_name: "study_complete_exit", easy_count: easyCount, hard_count: hardCount, review_mode: reviewMode });
+            onComplete();
+          }}>
             끝내기
           </Button>
-          <Button size="xlarge" style={{ flex: 1 }} onClick={handleRepeat}>
+          <Button size="xlarge" style={{ flex: 1 }} onClick={() => {
+            Analytics.click({ button_name: "study_complete_repeat", easy_count: easyCount, hard_count: hardCount });
+            handleRepeat();
+          }}>
             복습하기
           </Button>
         </div>
@@ -331,16 +340,16 @@ export function StudyCardPage({
             <button
               onClick={() => {
                 if (isPlaying) {
-                  window.speechSynthesis.cancel();
+                  audioRef.current?.pause();
+                  audioRef.current = null;
                   setIsPlaying(false);
                 } else {
                   setIsPlaying(true);
-                  const utterance = new SpeechSynthesisUtterance(current.english_expression);
-                  utterance.lang = "en-US";
-                  utterance.rate = 0.9;
-                  utterance.onend = () => setIsPlaying(false);
-                  window.speechSynthesis.cancel();
-                  window.speechSynthesis.speak(utterance);
+                  const audio = new Audio(`${TTS_BASE_URL}/${current.id}.mp3`);
+                  audioRef.current = audio;
+                  audio.onended = () => { audioRef.current = null; setIsPlaying(false); };
+                  audio.onerror = () => { audioRef.current = null; setIsPlaying(false); };
+                  audio.play().catch(() => { audioRef.current = null; setIsPlaying(false); });
                 }
               }}
               style={{ background: "none", border: "none", padding: 12, cursor: "pointer", display: "flex", alignItems: "center" }}

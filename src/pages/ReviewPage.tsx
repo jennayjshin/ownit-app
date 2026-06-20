@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Top } from "@toss/tds-mobile";
+import { Analytics } from "@apps-in-toss/web-framework";
 import { getAllStudiedSentences, toggleFavorite } from "../lib/db";
 import type { UserProgressWithSentence } from "../types/database";
 
@@ -14,7 +15,7 @@ function Sk({ w, h, r = 8, mb = 0, style }: { w?: string | number; h: number; r?
 
 function ReviewPageSkeleton() {
   return (
-    <div style={{ height: "calc(100vh - 64px)", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "calc(100vh - 84px - env(safe-area-inset-bottom))", display: "flex", flexDirection: "column" }}>
       <div style={{ paddingTop: 16 }} />
       {/* 헤더 */}
       <div style={{ padding: "24px 24px 20px" }}>
@@ -127,7 +128,7 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
   if (loading) return <ReviewPageSkeleton />;
 
   return (
-    <div style={{ height: "calc(100vh - 64px)", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "calc(100vh - 84px - env(safe-area-inset-bottom))", display: "flex", flexDirection: "column" }}>
       <div style={{ paddingTop: 16 }} />
       <Top
         title={<Top.TitleParagraph size={22}>📚 What I've learned</Top.TitleParagraph>}
@@ -238,7 +239,10 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
         <Button
           size="xlarge"
           style={{ width: "100%" }}
-          onClick={onStartReview}
+          onClick={() => {
+            Analytics.click({ button_name: "review_start", total_count: list.length });
+            onStartReview();
+          }}
           disabled={list.length === 0}
         >
           복습하기
