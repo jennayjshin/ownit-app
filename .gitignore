@@ -10,3 +10,7 @@ mTLS_*
 *.pem
 dist/
 
+# Sentence source data
+*.csv
+*.xlsx
+
