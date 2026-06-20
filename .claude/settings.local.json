@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(npx vite *)",
+      "Bash(pkill -f \"granite\")",
+      "Bash(pkill -f \"vite\")",
+      "Bash(lsof -ti:5173,5174,8081)",
+      "Bash(xargs kill -9)",
+      "Bash(cp /mnt/c/Users/user/Desktop/fastcampus-cc/60-appintoss-ownit/design.md /mnt/c/Users/user/Desktop/fastcampus-cc/60-appintoss-ownit/prd.md /mnt/c/Users/user/Desktop/fastcampus-cc/60-appintoss-ownit/prompt.md /mnt/c/Users/user/Desktop/fastcampus-cc/60-appintoss-ownit/sentence.csv /mnt/c/Users/user/Desktop/fastcampus-cc/60-appintoss-ownit/sentence.xlsx /home/yoojins2/dj-nativefit/)",
+      "Bash(cp /mnt/c/Users/user/Desktop/fastcampus-cc/60-appintoss-ownit/dj-nativefit/CLAUDE.md /home/yoojins2/dj-nativefit/)",
+      "Bash(cp -r /mnt/c/Users/user/Desktop/fastcampus-cc/60-appintoss-ownit/dj-nativefit/docs /home/yoojins2/dj-nativefit/)",
+      "Bash(grep -E \"\\\\.\\(md|csv|xlsx\\)$\")",
+      "Bash(lsof -ti:5173)",
+      "Bash(node *)",
+      "Bash(curl *)",
+      "Bash(npx tsc *)",
+      "WebFetch(domain:static.intoss.app)"
+    ]
+  }
+}

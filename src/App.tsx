@@ -1,0 +1,250 @@
+import { useEffect, useState } from "react";
+import "./App.css";
+import { HomePage } from "./pages/HomePage";
+import { StudyCardPage } from "./pages/StudyCardPage";
+import { ReviewPage } from "./pages/ReviewPage";
+import { SettingsPage, AllCompletePage } from "./pages/SettingsPage";
+import type { SettingsUpdate } from "./pages/SettingsPage";
+import { supabase } from "./lib/supabase";
+import { upsertUser } from "./lib/db";
+import type { Category } from "./types/database";
+
+type Tab = "home" | "review" | "settings";
+type Page = "tabs" | "study" | "review-study" | "all-complete";
+
+const DEFAULT_PROFILE = {
+  studyReason: "해외 취업을 위해 원어민처럼 말하고 싶어요",
+  dailyGoal: 5,
+  preferredCategories: [] as Category[],
+};
+
+function HomeIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "#3182f6" : "#8b95a1"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
+
+function ReviewIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "#3182f6" : "#8b95a1"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "#3182f6" : "#8b95a1"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+const TAB_LABELS: Record<Tab, string> = {
+  home: "홈",
+  review: "복습",
+  settings: "설정",
+};
+
+function BottomTabBar({ activeTab, onTabChange }: { activeTab: Tab; onTabChange: (tab: Tab) => void }) {
+  return (
+    <div style={{
+      position: "fixed",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: "calc(64px + env(safe-area-inset-bottom))",
+      background: "#ffffff",
+      borderTop: "1px solid #e5e8eb",
+      display: "flex",
+      alignItems: "center",
+      paddingBottom: "env(safe-area-inset-bottom)",
+    }}>
+      {(["home", "review", "settings"] as Tab[]).map((tab) => (
+        <button
+          key={tab}
+          onClick={() => onTabChange(tab)}
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "8px 0",
+          }}
+        >
+          {tab === "home" && <HomeIcon active={activeTab === tab} />}
+          {tab === "review" && <ReviewIcon active={activeTab === tab} />}
+          {tab === "settings" && <SettingsIcon active={activeTab === tab} />}
+          <span style={{ fontSize: 11, color: activeTab === tab ? "#3182f6" : "#8b95a1", fontWeight: activeTab === tab ? 600 : 400 }}>
+            {TAB_LABELS[tab]}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [page, setPage] = useState<Page>("tabs");
+  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [studyOffset, setStudyOffset] = useState(0);
+
+  // User settings — loaded from Supabase after auth
+  const [studyReason, setStudyReason] = useState(DEFAULT_PROFILE.studyReason);
+  const [dailyGoal, setDailyGoal] = useState(DEFAULT_PROFILE.dailyGoal);
+  const [preferredCategories, setPreferredCategories] = useState<Category[]>(DEFAULT_PROFILE.preferredCategories);
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    async function initAuth() {
+      let { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        const { data, error } = await supabase.auth.signInAnonymously();
+        if (error) {
+          console.error("Auth error:", error);
+          return;
+        }
+        session = data.session;
+      }
+
+      if (!session?.user) {
+        console.error("No user in session");
+        return;
+      }
+
+      const uid = session.user.id;
+      setUserId(uid);
+
+      try {
+        // Try to load existing user settings
+        const { data: existingUser } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", uid)
+          .single();
+
+        if (existingUser) {
+          // User exists — load their saved settings
+          setStudyReason(existingUser.study_reason ?? DEFAULT_PROFILE.studyReason);
+          setDailyGoal(existingUser.daily_goal ?? DEFAULT_PROFILE.dailyGoal);
+          setPreferredCategories(existingUser.preferred_categories ?? DEFAULT_PROFILE.preferredCategories);
+          setUserEmail(existingUser.email ?? "");
+        } else {
+          // First time — create with defaults
+          await upsertUser({
+            id: uid,
+            toss_user_id: uid,
+            study_reason: DEFAULT_PROFILE.studyReason,
+            daily_goal: DEFAULT_PROFILE.dailyGoal,
+            preferred_categories: DEFAULT_PROFILE.preferredCategories,
+          });
+        }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : JSON.stringify(e);
+        setAuthError(`초기화 실패: ${msg}`);
+      }
+    }
+    initAuth();
+  }, []);
+
+  const handleSettingsUpdate = (updates: SettingsUpdate) => {
+    if (updates.study_reason !== undefined) setStudyReason(updates.study_reason);
+    if (updates.daily_goal !== undefined) setDailyGoal(updates.daily_goal);
+    if (updates.preferred_categories !== undefined) setPreferredCategories(updates.preferred_categories);
+    if (updates.email !== undefined) setUserEmail(updates.email);
+  };
+
+  if (!userId) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: "0 24px" }}>
+        <p style={{ color: "#8b95a1" }}>불러오는 중...</p>
+        {authError && <p style={{ color: "red", fontSize: 13, marginTop: 16, textAlign: "center" }}>{authError}</p>}
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: "0 24px" }}>
+        <p style={{ color: "red", fontSize: 13, textAlign: "center" }}>{authError}</p>
+      </div>
+    );
+  }
+
+  if (page === "all-complete") {
+    return <AllCompletePage onBack={() => setPage("tabs")} />;
+  }
+
+  if (page === "study") {
+    return (
+      <StudyCardPage
+        userId={userId}
+        dailyGoal={dailyGoal}
+        preferredCategories={preferredCategories}
+        initialOffset={studyOffset}
+        onComplete={() => setPage("tabs")}
+        onBack={() => setPage("tabs")}
+        onAllComplete={() => setPage("all-complete")}
+      />
+    );
+  }
+
+  if (page === "review-study") {
+    return (
+      <StudyCardPage
+        userId={userId}
+        dailyGoal={dailyGoal}
+        preferredCategories={preferredCategories}
+        reviewMode
+        onComplete={() => { setPage("tabs"); setActiveTab("review"); }}
+        onBack={() => { setPage("tabs"); setActiveTab("review"); }}
+      />
+    );
+  }
+
+  return (
+    <div style={{ paddingBottom: 64 }}>
+      <div style={{ display: activeTab === "home" ? "block" : "none" }}>
+        <HomePage
+          userId={userId}
+          studyReason={studyReason}
+          dailyGoal={dailyGoal}
+          onStartStudy={(offset) => { setStudyOffset(offset); setPage("study"); }}
+          onStartReview={() => setActiveTab("review")}
+        />
+      </div>
+      <div style={{ display: activeTab === "review" ? "block" : "none" }}>
+        <ReviewPage
+          userId={userId}
+          onStartReview={() => setPage("review-study")}
+        />
+      </div>
+      <div style={{ display: activeTab === "settings" ? "block" : "none" }}>
+        <SettingsPage
+          userId={userId}
+          studyReason={studyReason}
+          dailyGoal={dailyGoal}
+          preferredCategories={preferredCategories}
+          onUpdate={handleSettingsUpdate}
+        />
+      </div>
+
+      <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+    </div>
+  );
+}
+
+export default App;
