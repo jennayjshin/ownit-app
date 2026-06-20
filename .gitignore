@@ -1,4 +1,6 @@
+.env
 .env.local
+.env*.local
 node_modules
 .next
 .DS_Store
@@ -6,3 +8,5 @@ mTLS_*
 *.key
 *.crt
 *.pem
+dist/
+
