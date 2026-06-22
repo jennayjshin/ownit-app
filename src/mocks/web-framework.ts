@@ -12,8 +12,21 @@ export const Analytics = {
 };
 
 export const requestNotificationAgreement = () => () => {};
-
 export const appLogin = async () => ({ authorizationCode: "dev", referrer: "" });
+export const closeView = async () => {};
+
+const loadFullScreenAdFn = (_opts: unknown) => () => {};
+(loadFullScreenAdFn as unknown as { isSupported: () => boolean }).isSupported = () => false;
+export const loadFullScreenAd = loadFullScreenAdFn as typeof loadFullScreenAdFn & { isSupported: () => boolean };
+export const showFullScreenAd = (_opts: unknown) => {};
+
+const iapInitFn = () => {};
+(iapInitFn as unknown as { isSupported: () => boolean }).isSupported = () => false;
+export const IAP = {
+  initialize: iapInitFn as typeof iapInitFn & { isSupported: () => boolean },
+  getProductList: async () => [],
+  purchase: async () => ({}),
+};
 
 // Required by @toss/tds-mobile-ait
 export const getAppsInTossGlobals = () => ({});
