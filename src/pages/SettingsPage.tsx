@@ -70,7 +70,7 @@ export interface SettingsUpdate {
 }
 
 interface SettingsPageProps {
-  userId: string;
+  userId: string | null;
   tossUserKey: string | null;
   studyReason: string;
   dailyGoal: number;

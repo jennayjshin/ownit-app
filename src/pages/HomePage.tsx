@@ -57,6 +57,7 @@ interface HomePageProps {
   dailyGoal: number;
   onStartStudy: () => void;
   onStartReview: () => void;
+  onDevLogin: () => void;
 }
 
 
@@ -66,12 +67,15 @@ export function HomePage({
   dailyGoal,
   onStartStudy,
   onStartReview,
+  onDevLogin,
 }: HomePageProps) {
   const [recentList, setRecentList] = useState<UserProgressWithSentence[]>([]);
   const [studiedCount, setStudiedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
   const bannerRef = useRef<HTMLDivElement>(null);
+  const goalTapCount = useRef(0);
+  const goalTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isStudyComplete = studiedCount >= dailyGoal;
 
@@ -146,7 +150,20 @@ export function HomePage({
       <div style={{ paddingTop: 16 }} />
 
       {/* My Goal */}
-      <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 16, overflow: "hidden" }}>
+      <div
+        style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 16, overflow: "hidden" }}
+        onClick={() => {
+          if (userId) return;
+          goalTapCount.current += 1;
+          if (goalTapTimer.current) clearTimeout(goalTapTimer.current);
+          if (goalTapCount.current >= 5) {
+            goalTapCount.current = 0;
+            onDevLogin();
+          } else {
+            goalTapTimer.current = setTimeout(() => { goalTapCount.current = 0; }, 1500);
+          }
+        }}
+      >
         <Top
           title={<Top.TitleParagraph size={22}>🎯 My Goal</Top.TitleParagraph>}
           subtitleBottom={<Top.SubtitleParagraph size={15}>{studyReason}</Top.SubtitleParagraph>}

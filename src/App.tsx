@@ -208,6 +208,31 @@ function App() {
     }
   };
 
+  const devLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dev-login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({ secret: "ownit-dev-bypass-2026" }),
+        }
+      );
+      const payload = await res.json();
+      if (payload.error) throw new Error(payload.error);
+      const { data: otpData, error: otpErr } = await supabase.auth.verifyOtp({ token_hash: payload.token_hash, type: "email" });
+      if (otpErr) throw otpErr;
+      if (!otpData.session?.user) throw new Error("세션 생성 실패");
+      await setupUser(otpData.session);
+    } catch (e) {
+      console.error("[devLogin]", e);
+      setAuthError("테스트 로그인 실패");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
   const handleSettingsUpdate = (updates: SettingsUpdate) => {
     if (updates.study_reason !== undefined) setStudyReason(updates.study_reason);
     if (updates.daily_goal !== undefined) setDailyGoal(updates.daily_goal);
@@ -275,6 +300,7 @@ function App() {
             Analytics.screen({ log_name: "study_card_screen", mode: "study" });
           }}
           onStartReview={() => setActiveTab("review")}
+          onDevLogin={devLogin}
         />
       </div>
       {userId && (
