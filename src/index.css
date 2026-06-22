@@ -2,42 +2,76 @@
   font-family: sans-serif;
 
   /* Light mode color tokens */
-  --c-bg-app:       #f9fafb;
-  --c-bg-card:      #ffffff;
-  --c-bg-input:     #f2f4f6;
-  --c-blue-tint:    #e8f3ff;
-  --c-red-tint:     #fff1f0;
-  --c-text-primary: #191f28;
-  --c-text-body:    #333d4b;
+  --c-bg-app:         #f9fafb;
+  --c-bg-card:        #ffffff;
+  --c-bg-input:       #f2f4f6;
+  --c-blue-tint:      #e8f3ff;
+  --c-red-tint:       #fff1f0;
+  --c-text-primary:   #191f28;
+  --c-text-body:      #333d4b;
   --c-text-secondary: #8b95a1;
-  --c-text-caption: #6b7684;
-  --c-text-hint:    #b0b8c1;
-  --c-border:       #e5e8eb;
-  --c-divider:      #f2f4f6;
-  --c-blue:         #3182f6;
-  --c-shadow:       rgba(25, 31, 40, 0.12);
-  --c-overlay:      rgba(25, 31, 40, 0.5);
+  --c-text-caption:   #6b7684;
+  --c-text-hint:      #b0b8c1;
+  --c-border:         #e5e8eb;
+  --c-divider:        #f2f4f6;
+  --c-blue:           #3182f6;
+  --c-shadow:         rgba(25, 31, 40, 0.12);
+  --c-overlay:        rgba(25, 31, 40, 0.5);
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --c-bg-app:       #0d1117;
-    --c-bg-card:      #1c1f2b;
-    --c-bg-input:     #252830;
-    --c-blue-tint:    #0d2044;
-    --c-red-tint:     #3d1515;
-    --c-text-primary: #f0f2f5;
-    --c-text-body:    #c9d1da;
+    /* Our custom tokens */
+    --c-bg-app:         #0d1117;
+    --c-bg-card:        #1c1f2b;
+    --c-bg-input:       #252830;
+    --c-blue-tint:      #0d2044;
+    --c-red-tint:       #3d1515;
+    --c-text-primary:   #f0f2f5;
+    --c-text-body:      #c9d1da;
     --c-text-secondary: #8b95a1;
-    --c-text-caption: #8b95a1;
-    --c-text-hint:    #6b7684;
-    --c-border:       #2e3340;
-    --c-divider:      #252830;
-    --c-blue:         #4d97ff;
-    --c-shadow:       rgba(0, 0, 0, 0.3);
-    --c-overlay:      rgba(0, 0, 0, 0.7);
+    --c-text-caption:   #8b95a1;
+    --c-text-hint:      #6b7684;
+    --c-border:         #2e3340;
+    --c-divider:        #252830;
+    --c-blue:           #4d97ff;
+    --c-shadow:         rgba(0, 0, 0, 0.3);
+    --c-overlay:        rgba(0, 0, 0, 0.7);
+
+    /* Override TDS --adaptive* variables (TDSMobileAITProvider hardcodes light values) */
+    --adaptiveBackground:        #17171c;
+    --adaptiveBackgroundLevel01: #202027;
+    --adaptiveBackgroundLevel02: #2c2c35;
+    --adaptiveBackgroundLevelB01:#101013;
+    --adaptiveBackgroundDimmed:  rgba(0, 0, 0, 0.56);
+    --adaptiveDimmedBackground:  rgba(0, 0, 0, 0.56);
+    --adaptiveLayeredBackground: #202027;
+    --adaptiveFloatBackground:   #2c2c35;
+    --adaptiveGreyBackground:    #101013;
+    --adaptiveHairlineBorder:    #3c3c47;
+    --adaptiveGrey50:  #202027;
+    --adaptiveGrey100: #2c2c35;
+    --adaptiveGrey200: #3c3c47;
+    --adaptiveGrey300: #4d4d59;
+    --adaptiveGrey400: #62626d;
+    --adaptiveGrey500: #7e7e87;
+    --adaptiveGrey600: #9e9ea4;
+    --adaptiveGrey700: #c3c3c6;
+    --adaptiveGrey800: #e4e4e5;
+    --adaptiveGrey900: #ffffff;
+    --adaptiveBlue50:  #202c4d;
+    --adaptiveBlue100: #23386a;
+    --adaptiveBlue200: #25478c;
+    --adaptiveBlue300: #265ab3;
+    --adaptiveBlue400: #2970d9;
+    --adaptiveBlue500: #3485fa;
+    --adaptiveBlue600: #449bff;
+    --adaptiveBlue700: #61b0ff;
+    --adaptiveBlue800: #8fcdff;
+    --adaptiveBlue900: #c8e7ff;
+    --adaptiveDisabledBlue500: rgba(69, 147, 252, 0.2);
   }
 }
 

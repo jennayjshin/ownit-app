@@ -128,7 +128,7 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
   if (loading) return <ReviewPageSkeleton />;
 
   return (
-    <div style={{ height: "calc(100vh - 84px - env(safe-area-inset-bottom))", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "calc(100vh - 84px - env(safe-area-inset-bottom))", display: "flex", flexDirection: "column", background: "var(--c-bg-app)" }}>
       <div style={{ paddingTop: 16 }} />
       <Top
         title={<Top.TitleParagraph size={22}>📚 What I've learned</Top.TitleParagraph>}

@@ -13,18 +13,18 @@ export function AlertModal({ message, onConfirm }: AlertModalProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(25, 31, 40, 0.5)",
+        background: "var(--c-overlay)",
       }}
       onClick={(e) => e.stopPropagation()}
     >
       <div
         style={{
-          background: "#ffffff",
+          background: "var(--c-bg-card)",
           borderRadius: 20,
           padding: "28px 24px 20px",
           width: "calc(100% - 64px)",
           maxWidth: 320,
-          boxShadow: "0 8px 32px rgba(25, 31, 40, 0.16)",
+          boxShadow: "0 8px 32px var(--c-shadow)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -34,7 +34,7 @@ export function AlertModal({ message, onConfirm }: AlertModalProps) {
         <p
           style={{
             fontSize: 15,
-            color: "#191f28",
+            color: "var(--c-text-primary)",
             lineHeight: 1.65,
             textAlign: "center",
             margin: 0,
@@ -47,7 +47,7 @@ export function AlertModal({ message, onConfirm }: AlertModalProps) {
           style={{
             width: "100%",
             padding: "14px 0",
-            background: "#3182f6",
+            background: "var(--c-blue)",
             border: "none",
             borderRadius: 12,
             fontSize: 16,

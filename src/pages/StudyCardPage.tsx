@@ -194,7 +194,7 @@ export function StudyCardPage({
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--c-bg-app)" }}>
         <p style={{ color: "var(--c-text-secondary)" }}>문장 불러오는 중...</p>
       </div>
     );
@@ -202,7 +202,7 @@ export function StudyCardPage({
 
   if (isCompleted) {
     return (
-      <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--c-bg-app)" }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px 100px" }}>
           <p style={{ fontSize: 48, marginBottom: 16 }}>🎉</p>
           <p style={{ fontSize: 22, fontWeight: 700, color: "var(--c-text-primary)", marginBottom: 8 }}>오늘의 학습 완료!</p>
