@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { appLogin, Analytics } from "@apps-in-toss/web-framework";
+import { AlertModal } from "./components/AlertModal";
 import { HomePage } from "./pages/HomePage";
 import { StudyCardPage } from "./pages/StudyCardPage";
 import { ReviewPage } from "./pages/ReviewPage";
@@ -198,8 +199,8 @@ function App() {
       await setupUser(otpData.session);
       return true;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : JSON.stringify(e);
-      setAuthError(`로그인 실패: ${msg}`);
+      console.error("[doLogin]", e);
+      setAuthError("로그인에 실패했어요. 잠시 후 다시 시도해주세요.");
       return false;
     } finally {
       isLoggingInRef.current = false;
@@ -223,13 +224,6 @@ function App() {
     );
   }
 
-  if (authError && !userId) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: "0 24px" }}>
-        <p style={{ color: "red", fontSize: 13, textAlign: "center" }}>{authError}</p>
-      </div>
-    );
-  }
 
   if (page === "all-complete") {
     return <AllCompletePage onBack={() => setPage("tabs")} />;
@@ -263,6 +257,12 @@ function App() {
 
   return (
     <div style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom))" }}>
+      {authError && (
+        <AlertModal
+          message={authError}
+          onConfirm={() => setAuthError(null)}
+        />
+      )}
       <div style={{ display: activeTab === "home" ? "block" : "none" }}>
         <HomePage
           userId={userId}

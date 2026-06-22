@@ -63,8 +63,8 @@ serve(async (req) => {
       email_confirm: true,
       user_metadata: { toss_user_key: userKey },
     });
-    // "already registered"는 정상 — 기존 유저면 그냥 진행
-    if (createErr && !createErr.message.toLowerCase().includes("already registered")) {
+    // 기존 유저면 그냥 진행 ("already been registered" 등)
+    if (createErr && !createErr.message.toLowerCase().includes("already")) {
       throw createErr;
     }
 
