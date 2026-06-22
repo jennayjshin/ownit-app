@@ -52,7 +52,7 @@ function HomePageSkeleton() {
 }
 
 interface HomePageProps {
-  userId: string;
+  userId: string | null;
   studyReason: string;
   dailyGoal: number;
   onStartStudy: () => void;
@@ -76,6 +76,10 @@ export function HomePage({
   const isStudyComplete = studiedCount >= dailyGoal;
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     Promise.all([
       getAllStudiedSentences(userId, 5, 0).then(setRecentList),
       getTodayStudiedCount(userId).then(setStudiedCount),

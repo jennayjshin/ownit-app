@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { appLogin, Analytics } from "@apps-in-toss/web-framework";
 import { HomePage } from "./pages/HomePage";
@@ -9,6 +9,7 @@ import type { SettingsUpdate } from "./pages/SettingsPage";
 import { supabase } from "./lib/supabase";
 import { upsertUser } from "./lib/db";
 import type { Category } from "./types/database";
+import type { Session } from "@supabase/supabase-js";
 
 type Tab = "home" | "review" | "settings";
 type Page = "tabs" | "study" | "review-study" | "all-complete";
@@ -99,99 +100,112 @@ function App() {
   const [userId, setUserId] = useState<string | null>(null);
   const [tossUserKey, setTossUserKey] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [page, setPage] = useState<Page>("tabs");
   const [activeTab, setActiveTab] = useState<Tab>("home");
 
-  // User settings — loaded from Supabase after auth
   const [studyReason, setStudyReason] = useState(DEFAULT_PROFILE.studyReason);
   const [dailyGoal, setDailyGoal] = useState(DEFAULT_PROFILE.dailyGoal);
   const [preferredCategories, setPreferredCategories] = useState<Category[]>(DEFAULT_PROFILE.preferredCategories);
   const [userEmail, setUserEmail] = useState<string>("");
 
+  const isLoggingInRef = useRef(false);
 
+  const setupUser = async (session: Session) => {
+    const uid = session.user.id;
+    setUserId(uid);
+    const key = session.user.user_metadata?.toss_user_key;
+    if (key) setTossUserKey(String(key));
+
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", uid)
+      .single();
+
+    if (existingUser) {
+      setStudyReason(existingUser.study_reason ?? DEFAULT_PROFILE.studyReason);
+      setDailyGoal(existingUser.daily_goal ?? DEFAULT_PROFILE.dailyGoal);
+      setPreferredCategories(existingUser.preferred_categories ?? DEFAULT_PROFILE.preferredCategories);
+      setUserEmail(existingUser.email ?? "");
+    } else {
+      const tossKey = session.user.user_metadata?.toss_user_key;
+      await upsertUser({
+        id: uid,
+        toss_user_id: tossKey ? String(tossKey) : uid,
+        study_reason: DEFAULT_PROFILE.studyReason,
+        daily_goal: DEFAULT_PROFILE.dailyGoal,
+        preferred_categories: DEFAULT_PROFILE.preferredCategories,
+      });
+    }
+  };
+
+  // 앱 시작 시: 기존 세션만 확인, appLogin() 호출하지 않음
   useEffect(() => {
-    async function initAuth() {
-      // 로컬 dev 우회: .env.local에 VITE_DEV_USER_ID 설정 시 auth 스킵
+    async function checkSession() {
       const devUserId = import.meta.env.VITE_DEV_USER_ID as string | undefined;
       if (devUserId) {
         setUserId(devUserId);
+        setIsAuthReady(true);
         return;
       }
-
-      // 기존 세션 확인
-      let { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        // 세션 없음 → 토스 로그인
-        try {
-          const { authorizationCode, referrer } = await appLogin();
-
-          const res = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/toss-auth`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
-              },
-              body: JSON.stringify({ authorizationCode, referrer }),
-            }
-          );
-          const payload = await res.json();
-          if (payload.error) throw new Error(payload.error);
-
-          const { data: otpData, error: otpErr } = await supabase.auth.verifyOtp({
-            token_hash: payload.token_hash,
-            type: "email",
-          });
-          if (otpErr) throw otpErr;
-          session = otpData.session;
-        } catch (e: unknown) {
-          const msg = e instanceof Error ? e.message : JSON.stringify(e);
-          setAuthError(`로그인 실패: ${msg}`);
-          return;
-        }
-      }
-
-      if (!session?.user) {
-        setAuthError("세션 생성 실패");
-        return;
-      }
-
-      const uid = session.user.id;
-      setUserId(uid);
-      const key = session.user.user_metadata?.toss_user_key;
-      if (key) setTossUserKey(String(key));
 
       try {
-        const { data: existingUser } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", uid)
-          .single();
-
-        if (existingUser) {
-          setStudyReason(existingUser.study_reason ?? DEFAULT_PROFILE.studyReason);
-          setDailyGoal(existingUser.daily_goal ?? DEFAULT_PROFILE.dailyGoal);
-          setPreferredCategories(existingUser.preferred_categories ?? DEFAULT_PROFILE.preferredCategories);
-          setUserEmail(existingUser.email ?? "");
-        } else {
-          const tossUserKey = session.user.user_metadata?.toss_user_key;
-          await upsertUser({
-            id: uid,
-            toss_user_id: tossUserKey ? String(tossUserKey) : uid,
-            study_reason: DEFAULT_PROFILE.studyReason,
-            daily_goal: DEFAULT_PROFILE.dailyGoal,
-            preferred_categories: DEFAULT_PROFILE.preferredCategories,
-          });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await setupUser(session);
         }
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : JSON.stringify(e);
-        setAuthError(`초기화 실패: ${msg}`);
+      } catch (e) {
+        console.error("Session check failed:", e);
+      } finally {
+        setIsAuthReady(true);
       }
     }
-    initAuth();
+    checkSession();
   }, []);
+
+  // 액션 시점에 호출: 로그인 필요할 때만 appLogin() 실행
+  const doLogin = async (): Promise<boolean> => {
+    if (userId) return true;
+    if (isLoggingInRef.current) return false;
+    isLoggingInRef.current = true;
+    setIsLoggingIn(true);
+    setAuthError(null);
+    try {
+      const { authorizationCode, referrer } = await appLogin();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/toss-auth`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ authorizationCode, referrer }),
+        }
+      );
+      const payload = await res.json();
+      if (payload.error) throw new Error(payload.error);
+
+      const { data: otpData, error: otpErr } = await supabase.auth.verifyOtp({
+        token_hash: payload.token_hash,
+        type: "email",
+      });
+      if (otpErr) throw otpErr;
+      if (!otpData.session?.user) throw new Error("세션 생성 실패");
+
+      await setupUser(otpData.session);
+      return true;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : JSON.stringify(e);
+      setAuthError(`로그인 실패: ${msg}`);
+      return false;
+    } finally {
+      isLoggingInRef.current = false;
+      setIsLoggingIn(false);
+    }
+  };
 
   const handleSettingsUpdate = (updates: SettingsUpdate) => {
     if (updates.study_reason !== undefined) setStudyReason(updates.study_reason);
@@ -200,7 +214,7 @@ function App() {
     if (updates.email !== undefined) setUserEmail(updates.email);
   };
 
-  if (!userId) {
+  if (!isAuthReady || isLoggingIn) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: "0 24px" }}>
         <p style={{ color: "#8b95a1" }}>불러오는 중...</p>
@@ -209,7 +223,7 @@ function App() {
     );
   }
 
-  if (authError) {
+  if (authError && !userId) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: "0 24px" }}>
         <p style={{ color: "red", fontSize: 13, textAlign: "center" }}>{authError}</p>
@@ -221,7 +235,7 @@ function App() {
     return <AllCompletePage onBack={() => setPage("tabs")} />;
   }
 
-  if (page === "study") {
+  if (page === "study" && userId) {
     return (
       <StudyCardPage
         userId={userId}
@@ -234,7 +248,7 @@ function App() {
     );
   }
 
-  if (page === "review-study") {
+  if (page === "review-study" && userId) {
     return (
       <StudyCardPage
         userId={userId}
@@ -254,36 +268,46 @@ function App() {
           userId={userId}
           studyReason={studyReason}
           dailyGoal={dailyGoal}
-          onStartStudy={() => {
+          onStartStudy={async () => {
+            const ok = await doLogin();
+            if (!ok) return;
             setPage("study");
             Analytics.screen({ log_name: "study_card_screen", mode: "study" });
           }}
           onStartReview={() => setActiveTab("review")}
         />
       </div>
-      <div style={{ display: activeTab === "review" ? "block" : "none" }}>
-        <ReviewPage
-          userId={userId}
-          onStartReview={() => {
-            setPage("review-study");
-            Analytics.screen({ log_name: "study_card_screen", mode: "review" });
-          }}
-        />
-      </div>
-      <div style={{ display: activeTab === "settings" ? "block" : "none" }}>
-        <SettingsPage
-          userId={userId}
-          tossUserKey={tossUserKey}
-          studyReason={studyReason}
-          dailyGoal={dailyGoal}
-          preferredCategories={preferredCategories}
-          onUpdate={handleSettingsUpdate}
-        />
-      </div>
+      {userId && (
+        <>
+          <div style={{ display: activeTab === "review" ? "block" : "none" }}>
+            <ReviewPage
+              userId={userId}
+              onStartReview={() => {
+                setPage("review-study");
+                Analytics.screen({ log_name: "study_card_screen", mode: "review" });
+              }}
+            />
+          </div>
+          <div style={{ display: activeTab === "settings" ? "block" : "none" }}>
+            <SettingsPage
+              userId={userId}
+              tossUserKey={tossUserKey}
+              studyReason={studyReason}
+              dailyGoal={dailyGoal}
+              preferredCategories={preferredCategories}
+              onUpdate={handleSettingsUpdate}
+            />
+          </div>
+        </>
+      )}
 
       <BottomTabBar
         activeTab={activeTab}
-        onTabChange={(tab) => {
+        onTabChange={async (tab) => {
+          if (!userId && tab !== "home") {
+            const ok = await doLogin();
+            if (!ok) return;
+          }
           setActiveTab(tab);
           Analytics.screen({ log_name: `tab_${tab}` });
         }}
