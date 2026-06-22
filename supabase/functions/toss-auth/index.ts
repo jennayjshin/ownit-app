@@ -75,6 +75,19 @@ serve(async (req) => {
     });
     if (linkErr) throw linkErr;
 
+    // 5. 탈퇴 후 재가입 시 발생하는 orphaned users 행 정리
+    // auth 유저 UUID가 바뀌면 toss_user_id는 같지만 id가 다른 행이 남을 수 있음
+    const currentUid = linkData.user.id;
+    const { data: orphans } = await admin
+      .from("users")
+      .select("id")
+      .eq("toss_user_id", String(userKey))
+      .neq("id", currentUid);
+    for (const orphan of (orphans ?? [])) {
+      await admin.from("user_progress").delete().eq("user_id", orphan.id);
+      await admin.from("users").delete().eq("id", orphan.id);
+    }
+
     return new Response(
       JSON.stringify({ token_hash: linkData.properties.hashed_token, userKey }),
       { headers: { ...CORS, "Content-Type": "application/json" } }
