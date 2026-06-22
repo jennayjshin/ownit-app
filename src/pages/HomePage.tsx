@@ -104,7 +104,7 @@ export function HomePage({
         onInitialized: () => {
           if (!bannerRef.current) return;
           attachedResult = TossAds.attachBanner(
-            "ait.v2.live.5d38d0c155a6400e",
+            "ait-ad-test-banner-id",
             bannerRef.current,
             {
               theme: "auto",
