@@ -611,7 +611,7 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 64, display: "flex", flexDirection: "column", background: "#ffffff", zIndex: 100 }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", background: "#ffffff", zIndex: 100 }}>
       {/* 헤더 */}
       <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 8px", borderBottom: "1px solid #f2f4f6" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", padding: 8, cursor: "pointer", display: "flex", alignItems: "center" }}>
@@ -652,7 +652,7 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* 하단 버튼 */}
-      <div style={{ padding: "12px 24px 16px" }}>
+      <div style={{ padding: "12px 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}>
         <button
           onClick={handleSend}
           disabled={!text.trim()}

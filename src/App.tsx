@@ -111,6 +111,13 @@ function App() {
 
   useEffect(() => {
     async function initAuth() {
+      // 로컬 dev 우회: .env.local에 VITE_DEV_USER_ID 설정 시 auth 스킵
+      const devUserId = import.meta.env.VITE_DEV_USER_ID as string | undefined;
+      if (devUserId) {
+        setUserId(devUserId);
+        return;
+      }
+
       // 기존 세션 확인
       let { data: { session } } = await supabase.auth.getSession();
 
