@@ -40,7 +40,11 @@
     --c-shadow:         rgba(0, 0, 0, 0.3);
     --c-overlay:        rgba(0, 0, 0, 0.7);
 
-    /* Override TDS --adaptive* variables (TDSMobileAITProvider hardcodes light values) */
+  }
+
+  /* Override TDS --adaptive* variables with higher specificity (html:root = 0,1,1,0)
+     so we beat Emotion's runtime-injected :root = 0,1,0,0 */
+  html:root {
     --adaptiveBackground:        #17171c;
     --adaptiveBackgroundLevel01: #202027;
     --adaptiveBackgroundLevel02: #2c2c35;
