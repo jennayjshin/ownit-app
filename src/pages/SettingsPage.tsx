@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import { requestNotificationAgreement, Analytics } from "@apps-in-toss/web-framework";
-import { closeView } from "@apps-in-toss/web-framework";
 import { updateUser } from "../lib/db";
 import { supabase } from "../lib/supabase";
 import type { Category, Difficulty } from "../types/database";
@@ -191,7 +190,6 @@ export function SettingsPage({
 
       await supabase.auth.signOut();
       onWithdraw();
-      await closeView();
     } catch (e) {
       console.error("[withdraw]", e);
       setAlertMessage("탈퇴 처리 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
@@ -268,13 +266,13 @@ export function SettingsPage({
   const canSaveReason = !!reasonDraft.trim() && !isSavingReason;
 
   return (
-    <div style={{ background: "#f9fafb", minHeight: "100vh", paddingBottom: 100 }}>
+    <div style={{ background: "var(--c-bg-app)", minHeight: "100vh", paddingBottom: 100 }}>
       {alertMessage && (
         <AlertModal message={alertMessage} onConfirm={() => setAlertMessage(null)} />
       )}
       {/* Header */}
-      <div style={{ background: "#ffffff", padding: "20px 24px 16px", borderBottom: "1px solid #e5e8eb" }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: "#191f28", margin: 0 }}>설정</h1>
+      <div style={{ background: "var(--c-bg-card)", padding: "20px 24px 16px", borderBottom: "1px solid var(--c-border)" }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--c-text-primary)", margin: 0 }}>설정</h1>
       </div>
 
       {/* 내가 영어를 공부하는 이유 */}
@@ -291,8 +289,8 @@ export function SettingsPage({
                 width: "100%",
                 padding: "12px 16px",
                 fontSize: 15,
-                color: "#191f28",
-                background: "#f2f4f6",
+                color: "var(--c-text-primary)",
+                background: "var(--c-bg-input)",
                 border: "none",
                 borderRadius: 12,
                 resize: "none",
@@ -302,7 +300,7 @@ export function SettingsPage({
                 fontFamily: "inherit",
               }}
             />
-            <div style={{ fontSize: 12, color: "#8b95a1", textAlign: "right", marginTop: 4, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: "var(--c-text-secondary)", textAlign: "right", marginTop: 4, marginBottom: 12 }}>
               {reasonDraft.length}/100
             </div>
             <div style={{ display: "flex", gap: 8 }}>
@@ -329,23 +327,23 @@ export function SettingsPage({
               alignItems: "center",
               justifyContent: "space-between",
               padding: "14px 16px",
-              background: "#f2f4f6",
+              background: "var(--c-bg-input)",
               borderRadius: 12,
               cursor: "pointer",
               gap: 12,
             }}
           >
-            <span style={{ fontSize: 15, color: "#191f28", lineHeight: 1.5, flex: 1 }}>
+            <span style={{ fontSize: 15, color: "var(--c-text-primary)", lineHeight: 1.5, flex: 1 }}>
               {studyReason}
             </span>
-            <span style={{ fontSize: 13, color: "#3182f6", flexShrink: 0, fontWeight: 500 }}>수정</span>
+            <span style={{ fontSize: 13, color: "var(--c-blue)", flexShrink: 0, fontWeight: 500 }}>수정</span>
           </div>
         )}
       </SettingsSection>
 
       {/* 학습량 */}
       <SettingsSection title="하루 학습량">
-        <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 12 }}>
+        <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 12 }}>
           매일 학습할 문장 수를 설정해요
         </p>
         <div style={{ display: "flex", gap: 8 }}>
@@ -361,8 +359,8 @@ export function SettingsPage({
                   padding: "13px 0",
                   fontSize: 15,
                   fontWeight: active ? 700 : 400,
-                  color: active ? "#ffffff" : "#333d4b",
-                  background: active ? "#3182f6" : "#f2f4f6",
+                  color: active ? "#ffffff" : "var(--c-text-body)",
+                  background: active ? "var(--c-blue)" : "var(--c-bg-input)",
                   border: "none",
                   borderRadius: 10,
                   cursor: "pointer",
@@ -378,7 +376,7 @@ export function SettingsPage({
 
       {/* 카드 표시 순서 */}
       <SettingsSection title="카드 표시 순서">
-        <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 12 }}>
+        <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 12 }}>
           학습 카드의 앞면에 표시할 언어를 선택해요
         </p>
         <div style={{ display: "flex", gap: 8 }}>
@@ -396,8 +394,8 @@ export function SettingsPage({
                   padding: "13px 0",
                   fontSize: 15,
                   fontWeight: active ? 700 : 400,
-                  color: active ? "#ffffff" : "#333d4b",
-                  background: active ? "#3182f6" : "#f2f4f6",
+                  color: active ? "#ffffff" : "var(--c-text-body)",
+                  background: active ? "var(--c-blue)" : "var(--c-bg-input)",
                   border: "none",
                   borderRadius: 10,
                   cursor: "pointer",
@@ -413,7 +411,7 @@ export function SettingsPage({
 
       {/* 난이도 */}
       <SettingsSection title="난이도">
-        <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 12 }}>
+        <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 12 }}>
           {preferredDifficulties.length === 0
             ? "미선택 시 모든 난이도를 랜덤으로 학습해요"
             : `${preferredDifficulties.length}개 선택됨`}
@@ -432,8 +430,8 @@ export function SettingsPage({
                   padding: "13px 0",
                   fontSize: 14,
                   fontWeight: selected ? 700 : 400,
-                  color: selected ? "#3182f6" : "#6b7684",
-                  background: selected ? "#e8f3ff" : "#f2f4f6",
+                  color: selected ? "var(--c-blue)" : "var(--c-text-caption)",
+                  background: selected ? "var(--c-blue-tint)" : "var(--c-bg-input)",
                   border: `1.5px solid ${selected ? "#3182f6" : "transparent"}`,
                   borderRadius: 10,
                   cursor: "pointer",
@@ -449,7 +447,7 @@ export function SettingsPage({
 
       {/* 카테고리 */}
       <SettingsSection title="학습 카테고리">
-        <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 12 }}>
+        <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 12 }}>
           {preferredCategories.length === 0
             ? "미선택 시 전체 카테고리를 랜덤으로 학습해요"
             : `${preferredCategories.length}개 선택됨`}
@@ -466,8 +464,8 @@ export function SettingsPage({
                   padding: "8px 14px",
                   fontSize: 13,
                   fontWeight: selected ? 600 : 400,
-                  color: selected ? "#3182f6" : "#6b7684",
-                  background: selected ? "#e8f3ff" : "#f2f4f6",
+                  color: selected ? "var(--c-blue)" : "var(--c-text-caption)",
+                  background: selected ? "var(--c-blue-tint)" : "var(--c-bg-input)",
                   border: `1.5px solid ${selected ? "#3182f6" : "transparent"}`,
                   borderRadius: 20,
                   cursor: "pointer",
@@ -484,10 +482,10 @@ export function SettingsPage({
       {/* 루틴 알림 */}
       <SettingsSection title="루틴 알림">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 15, color: "#333d4b" }}>
+          <span style={{ fontSize: 15, color: "var(--c-text-body)" }}>
             알림 받기
             {isRequestingNotif && (
-              <span style={{ fontSize: 12, color: "#8b95a1", marginLeft: 8 }}>동의 요청 중...</span>
+              <span style={{ fontSize: 12, color: "var(--c-text-secondary)", marginLeft: 8 }}>동의 요청 중...</span>
             )}
           </span>
           <ToggleSwitch
@@ -498,7 +496,7 @@ export function SettingsPage({
 
         {notification.enabled && (
           <div style={{ marginTop: 20 }}>
-            <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 8 }}>알림 요일</p>
+            <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 8 }}>알림 요일</p>
             <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
               {DAYS_KR.map((day, i) => {
                 const active = notification.days.includes(i);
@@ -511,8 +509,8 @@ export function SettingsPage({
                       padding: "9px 0",
                       fontSize: 13,
                       fontWeight: active ? 600 : 400,
-                      color: active ? "#3182f6" : "#8b95a1",
-                      background: active ? "#e8f3ff" : "#f2f4f6",
+                      color: active ? "var(--c-blue)" : "var(--c-text-secondary)",
+                      background: active ? "var(--c-blue-tint)" : "var(--c-bg-input)",
                       border: `1.5px solid ${active ? "#3182f6" : "transparent"}`,
                       borderRadius: 8,
                       cursor: "pointer",
@@ -525,7 +523,7 @@ export function SettingsPage({
               })}
             </div>
 
-            <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 8 }}>알림 시간</p>
+            <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 8 }}>알림 시간</p>
             <div style={{ display: "flex", gap: 8 }}>
               {/* Hour select */}
               <div style={{ flex: 1, position: "relative" }}>
@@ -570,29 +568,29 @@ export function SettingsPage({
       <div style={{ padding: "8px 24px 40px", textAlign: "center" }}>
         <button
           onClick={() => setShowWithdrawConfirm(true)}
-          style={{ background: "none", border: "none", fontSize: 13, color: "#b0b8c1", cursor: "pointer", textDecoration: "underline" }}
+          style={{ background: "none", border: "none", fontSize: 13, color: "var(--c-text-hint)", cursor: "pointer", textDecoration: "underline" }}
         >
           탈퇴하기
         </button>
       </div>
 
-      <div style={{ textAlign: "center", padding: "0 0 8px", color: "#8b95a1", fontSize: 12 }}>
+      <div style={{ textAlign: "center", padding: "0 0 8px", color: "var(--c-text-secondary)", fontSize: 12 }}>
         온잇(OwnIt) v0.1.0
       </div>
 
       {/* 탈퇴 확인 모달 */}
       {showWithdrawConfirm && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(25,31,40,0.5)" }}>
-          <div style={{ background: "#fff", borderRadius: 20, padding: "28px 24px 20px", width: "calc(100% - 64px)", maxWidth: 320 }}>
-            <p style={{ fontSize: 17, fontWeight: 700, color: "#191f28", textAlign: "center", marginBottom: 12 }}>정말 탈퇴하시겠어요?</p>
-            <p style={{ fontSize: 14, color: "#6b7684", lineHeight: 1.65, textAlign: "center", marginBottom: 24 }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--c-overlay)" }}>
+          <div style={{ background: "var(--c-bg-card)", borderRadius: 20, padding: "28px 24px 20px", width: "calc(100% - 64px)", maxWidth: 320 }}>
+            <p style={{ fontSize: 17, fontWeight: 700, color: "var(--c-text-primary)", textAlign: "center", marginBottom: 12 }}>정말 탈퇴하시겠어요?</p>
+            <p style={{ fontSize: 14, color: "var(--c-text-caption)", lineHeight: 1.65, textAlign: "center", marginBottom: 24 }}>
               지금까지의 학습 기록이 모두 삭제되며{"\n"}복구할 수 없어요.
             </p>
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 onClick={() => setShowWithdrawConfirm(false)}
                 disabled={isWithdrawing}
-                style={{ flex: 1, padding: "14px 0", background: "#f2f4f6", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "#333d4b", cursor: "pointer" }}
+                style={{ flex: 1, padding: "14px 0", background: "var(--c-bg-input)", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "var(--c-text-body)", cursor: "pointer" }}
               >
                 취소
               </button>
@@ -613,8 +611,8 @@ export function SettingsPage({
 
 function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: "#ffffff", marginTop: 8, padding: "20px 24px" }}>
-      <h2 style={{ fontSize: 13, fontWeight: 600, color: "#8b95a1", marginBottom: 16, letterSpacing: "0.04em" }}>
+    <div style={{ background: "var(--c-bg-card)", marginTop: 8, padding: "20px 24px" }}>
+      <h2 style={{ fontSize: 13, fontWeight: 600, color: "var(--c-text-secondary)", marginBottom: 16, letterSpacing: "0.04em" }}>
         {title.toUpperCase()}
       </h2>
       {children}
@@ -634,12 +632,12 @@ function ListRow({ label, onClick }: { label: string; onClick: () => void }) {
         padding: "15px 0",
         background: "none",
         border: "none",
-        borderBottom: "1px solid #f2f4f6",
+        borderBottom: "1px solid var(--c-divider)",
         cursor: "pointer",
         textAlign: "left",
       }}
     >
-      <span style={{ fontSize: 15, color: "#333d4b" }}>{label}</span>
+      <span style={{ fontSize: 15, color: "var(--c-text-body)" }}>{label}</span>
       <span style={{ color: "#d1d6db", fontSize: 20, lineHeight: 1 }}>›</span>
     </button>
   );
@@ -670,8 +668,8 @@ function ToggleSwitch({ enabled, onChange }: { enabled: boolean; onChange: (v: b
           width: 24,
           height: 24,
           borderRadius: "50%",
-          background: "#ffffff",
-          boxShadow: "0 1px 3px rgba(25,31,40,0.15)",
+          background: "var(--c-bg-card)",
+          boxShadow: "0 1px 3px var(--c-shadow)",
           transition: "left 200ms ease",
         }}
       />
@@ -687,7 +685,7 @@ function SelectArrow() {
       top: "50%",
       transform: "translateY(-50%)",
       pointerEvents: "none",
-      color: "#8b95a1",
+      color: "var(--c-text-secondary)",
       fontSize: 12,
     }}>
       ▾
@@ -699,8 +697,8 @@ const timeSelectStyle: React.CSSProperties = {
   width: "100%",
   padding: "13px 36px 13px 16px",
   fontSize: 15,
-  color: "#191f28",
-  background: "#f2f4f6",
+  color: "var(--c-text-primary)",
+  background: "var(--c-bg-input)",
   border: "none",
   borderRadius: 12,
   outline: "none",
@@ -725,20 +723,20 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", background: "#ffffff", zIndex: 100 }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", background: "var(--c-bg-card)", zIndex: 100 }}>
       {/* 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 8px", borderBottom: "1px solid #f2f4f6" }}>
+      <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 8px", borderBottom: "1px solid var(--c-divider)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", padding: 8, cursor: "pointer", display: "flex", alignItems: "center" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-secondary)" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
-        <span style={{ fontSize: 17, fontWeight: 600, color: "#191f28", marginLeft: 4 }}>의견 보내기</span>
+        <span style={{ fontSize: 17, fontWeight: 600, color: "var(--c-text-primary)", marginLeft: 4 }}>의견 보내기</span>
       </div>
 
       {/* 본문 */}
       <div style={{ flex: 1, padding: "24px 24px 0", display: "flex", flexDirection: "column" }}>
-        <p style={{ fontSize: 14, color: "#8b95a1", marginBottom: 12 }}>
+        <p style={{ fontSize: 14, color: "var(--c-text-secondary)", marginBottom: 12 }}>
           불편한 점이나 원하는 표현·기능을 자유롭게 적어주세요
         </p>
         <textarea
@@ -750,8 +748,8 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
             flex: 1,
             padding: "16px",
             fontSize: 15,
-            color: "#191f28",
-            background: "#f2f4f6",
+            color: "var(--c-text-primary)",
+            background: "var(--c-bg-input)",
             border: "none",
             borderRadius: 12,
             resize: "none",
@@ -760,7 +758,7 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
             fontFamily: "inherit",
           }}
         />
-        <p style={{ fontSize: 12, color: "#b0b8c1", textAlign: "right", marginTop: 6 }}>
+        <p style={{ fontSize: 12, color: "var(--c-text-hint)", textAlign: "right", marginTop: 6 }}>
           {text.length}/1000
         </p>
       </div>
@@ -775,10 +773,10 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
             padding: "16px 0",
             borderRadius: 14,
             border: "none",
-            background: text.trim() ? "#3182f6" : "#e5e8eb",
+            background: text.trim() ? "var(--c-blue)" : "var(--c-border)",
             fontSize: 17,
             fontWeight: 600,
-            color: text.trim() ? "#ffffff" : "#8b95a1",
+            color: text.trim() ? "#ffffff" : "var(--c-text-secondary)",
             cursor: text.trim() ? "pointer" : "default",
             transition: "background 0.2s",
           }}
@@ -792,14 +790,14 @@ function FeedbackPage({ onBack }: { onBack: () => void }) {
 
 export function AllCompletePage({ onBack }: { onBack: () => void }) {
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", background: "#ffffff", zIndex: 100 }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", background: "var(--c-bg-card)", zIndex: 100 }}>
       {/* 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 8px", borderBottom: "1px solid #f2f4f6" }}>
+      <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 8px", borderBottom: "1px solid var(--c-divider)" }}>
         <button
           onClick={onBack}
           style={{ background: "none", border: "none", padding: 8, cursor: "pointer", display: "flex", alignItems: "center" }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-secondary)" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -809,20 +807,20 @@ export function AllCompletePage({ onBack }: { onBack: () => void }) {
       {/* 본문 */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 32px", textAlign: "center" }}>
         <p style={{ fontSize: 64, marginBottom: 24 }}>🎓</p>
-        <p style={{ fontSize: 24, fontWeight: 700, color: "#191f28", marginBottom: 12, lineHeight: 1.4 }}>
+        <p style={{ fontSize: 24, fontWeight: 700, color: "var(--c-text-primary)", marginBottom: 12, lineHeight: 1.4 }}>
           모든 문장을 학습했어요!
         </p>
-        <p style={{ fontSize: 16, color: "#8b95a1", lineHeight: 1.7, marginBottom: 8 }}>
+        <p style={{ fontSize: 16, color: "var(--c-text-secondary)", lineHeight: 1.7, marginBottom: 8 }}>
           791개의 모든 표현을 완주했어요.
         </p>
-        <p style={{ fontSize: 16, color: "#8b95a1", lineHeight: 1.7 }}>
-          정말 대단해요. 이제 진짜 <span style={{ color: "#3182f6", fontWeight: 600 }}>온잇(OwnIt)</span>이에요!
+        <p style={{ fontSize: 16, color: "var(--c-text-secondary)", lineHeight: 1.7 }}>
+          정말 대단해요. 이제 진짜 <span style={{ color: "var(--c-blue)", fontWeight: 600 }}>온잇(OwnIt)</span>이에요!
         </p>
       </div>
 
       {/* 하단 고정 버튼 */}
       <div style={{ padding: "0 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}>
-        <p style={{ fontSize: 13, color: "#b0b8c1", textAlign: "center", marginBottom: 12 }}>
+        <p style={{ fontSize: 13, color: "var(--c-text-hint)", textAlign: "center", marginBottom: 12 }}>
           원하는 표현이나 문장을 제안해 주세요
         </p>
         <button
@@ -866,7 +864,7 @@ const subBtn: React.CSSProperties = {
   fontSize: 15,
   fontWeight: 500,
   color: "#1b64da",
-  background: "#e8f3ff",
+  background: "var(--c-blue-tint)",
   border: "none",
   borderRadius: 10,
   cursor: "pointer",

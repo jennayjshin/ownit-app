@@ -16,21 +16,21 @@ function Sk({ w, h, r = 8, mb = 0, style }: { w?: string | number; h: number; r?
 
 function HomePageSkeleton() {
   return (
-    <div style={{ background: "#f2f4f6", minHeight: "100vh", paddingBottom: 40 }}>
+    <div style={{ background: "var(--c-bg-input)", minHeight: "100vh", paddingBottom: 40 }}>
       <div style={{ paddingTop: 16 }} />
       {/* My Goal */}
-      <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 16, padding: "24px 20px 20px" }}>
+      <div style={{ margin: "0 16px 12px", background: "var(--c-bg-card)", borderRadius: 16, padding: "24px 20px 20px" }}>
         <Sk w={90} h={22} r={6} mb={10} />
         <Sk w="78%" h={16} r={5} />
       </div>
       {/* Today's expressions */}
-      <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 16, padding: "20px 20px 24px" }}>
+      <div style={{ margin: "0 16px 12px", background: "var(--c-bg-card)", borderRadius: 16, padding: "20px 20px 24px" }}>
         <Sk w={130} h={13} r={4} mb={14} />
         <Sk w="65%" h={17} r={6} mb={20} />
         <Sk h={52} r={12} />
       </div>
       {/* Ad */}
-      <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ margin: "0 16px 12px", background: "var(--c-bg-card)", borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
         <Sk w={48} h={48} r={12} style={{ flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
           <Sk w="60%" h={15} r={5} mb={7} />
@@ -38,10 +38,10 @@ function HomePageSkeleton() {
         </div>
       </div>
       {/* What I've learned */}
-      <div style={{ margin: "0 16px 40px", background: "#fff", borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ margin: "0 16px 40px", background: "var(--c-bg-card)", borderRadius: 16, overflow: "hidden" }}>
         <Sk w={110} h={13} r={4} style={{ margin: "16px 20px 12px" }} />
         {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ padding: "14px 20px", borderBottom: "1px solid #f2f4f6" }}>
+          <div key={i} style={{ padding: "14px 20px", borderBottom: "1px solid var(--c-divider)" }}>
             <Sk w="82%" h={15} r={5} mb={7} />
             <Sk w="55%" h={13} r={4} />
           </div>
@@ -57,9 +57,7 @@ interface HomePageProps {
   dailyGoal: number;
   onStartStudy: () => void;
   onStartReview: () => void;
-  onDevLogin: () => void;
 }
-
 
 export function HomePage({
   userId,
@@ -67,15 +65,12 @@ export function HomePage({
   dailyGoal,
   onStartStudy,
   onStartReview,
-  onDevLogin,
 }: HomePageProps) {
   const [recentList, setRecentList] = useState<UserProgressWithSentence[]>([]);
   const [studiedCount, setStudiedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
   const bannerRef = useRef<HTMLDivElement>(null);
-  const goalTapCount = useRef(0);
-  const goalTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isStudyComplete = studiedCount >= dailyGoal;
 
@@ -148,23 +143,12 @@ export function HomePage({
   if (loading) return <HomePageSkeleton />;
 
   return (
-    <div style={{ background: "#f2f4f6", minHeight: "100vh", paddingBottom: 40 }}>
+    <div style={{ background: "var(--c-bg-input)", minHeight: "100vh", paddingBottom: 40 }}>
       <div style={{ paddingTop: 16 }} />
 
       {/* My Goal */}
       <div
-        style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 16, overflow: "hidden" }}
-        onClick={() => {
-          if (userId) return;
-          goalTapCount.current += 1;
-          if (goalTapTimer.current) clearTimeout(goalTapTimer.current);
-          if (goalTapCount.current >= 5) {
-            goalTapCount.current = 0;
-            onDevLogin();
-          } else {
-            goalTapTimer.current = setTimeout(() => { goalTapCount.current = 0; }, 1500);
-          }
-        }}
+        style={{ margin: "0 16px 12px", background: "var(--c-bg-card)", borderRadius: 16, overflow: "hidden" }}
       >
         <Top
           title={<Top.TitleParagraph size={22}>🎯 My Goal</Top.TitleParagraph>}
@@ -173,15 +157,15 @@ export function HomePage({
       </div>
 
       {/* Today's expressions */}
-      <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 16, padding: "20px 20px 24px" }}>
+      <div style={{ margin: "0 16px 12px", background: "var(--c-bg-card)", borderRadius: 16, padding: "20px 20px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 14 }}>⚡</span>
-          <p style={{ fontSize: 13, color: "#8b95a1" }}>Today's expressions</p>
+          <p style={{ fontSize: 13, color: "var(--c-text-secondary)" }}>Today's expressions</p>
         </div>
 
         {isStudyComplete ? (
           <>
-            <p style={{ fontSize: 17, fontWeight: 600, color: "#191f28", marginBottom: 20 }}>
+            <p style={{ fontSize: 17, fontWeight: 600, color: "var(--c-text-primary)", marginBottom: 20 }}>
               오늘의 학습을 완료했어요
             </p>
             <Button size="xlarge" style={{ width: "100%" }} onClick={() => {
@@ -193,8 +177,8 @@ export function HomePage({
           </>
         ) : (
           <>
-            <p style={{ fontSize: 17, fontWeight: 600, color: "#191f28", marginBottom: 20 }}>
-              오늘 <span style={{ color: "#3182f6" }}>{dailyGoal}문장</span>을 학습해 보세요
+            <p style={{ fontSize: 17, fontWeight: 600, color: "var(--c-text-primary)", marginBottom: 20 }}>
+              오늘 <span style={{ color: "var(--c-blue)" }}>{dailyGoal}문장</span>을 학습해 보세요
             </p>
             <Button size="xlarge" style={{ width: "100%" }} onClick={() => {
               Analytics.click({ button_name: "study_start", daily_goal: dailyGoal });
@@ -209,7 +193,7 @@ export function HomePage({
       {/* 배너 광고 영역 */}
       <div style={{
         margin: showBanner ? "0 16px 12px" : 0,
-        background: "#fff",
+        background: "var(--c-bg-card)",
         borderRadius: showBanner ? 16 : 0,
         overflow: "hidden",
         height: showBanner ? "auto" : 0,
@@ -218,23 +202,23 @@ export function HomePage({
       </div>
 
       {/* What I've learned */}
-      <div style={{ margin: "0 16px 40px", background: "#fff", borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ margin: "0 16px 40px", background: "var(--c-bg-card)", borderRadius: 16, overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "16px 20px 12px" }}>
           <span style={{ fontSize: 14 }}>📚</span>
-          <p style={{ fontSize: 13, color: "#8b95a1" }}>What I've learned</p>
+          <p style={{ fontSize: 13, color: "var(--c-text-secondary)" }}>What I've learned</p>
         </div>
         {recentList.length === 0 ? (
-          <div style={{ padding: "20px 24px", textAlign: "center", color: "#8b95a1", fontSize: 14 }}>
+          <div style={{ padding: "20px 24px", textAlign: "center", color: "var(--c-text-secondary)", fontSize: 14 }}>
             아직 학습한 문장이 없어요
           </div>
         ) : (
           recentList.map((item) => (
             <div
               key={item.sentence_id}
-              style={{ padding: "14px 20px", borderBottom: "1px solid #f2f4f6" }}
+              style={{ padding: "14px 20px", borderBottom: "1px solid var(--c-divider)" }}
             >
-              <p style={{ fontSize: 15, fontWeight: 500, color: "#191f28", marginBottom: 2 }}>{item.sentences.english_expression}</p>
-              <p style={{ fontSize: 13, color: "#8b95a1" }}>{item.sentences.korean_translation}</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "var(--c-text-primary)", marginBottom: 2 }}>{item.sentences.english_expression}</p>
+              <p style={{ fontSize: 13, color: "var(--c-text-secondary)" }}>{item.sentences.korean_translation}</p>
             </div>
           ))
         )}

@@ -10,33 +10,33 @@ export function TermsPage({ onBack }: TermsPageProps) {
   const [activeTab, setActiveTab] = useState<TermsTab>("terms");
 
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "#ffffff", overflowY: "auto", zIndex: 100 }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "var(--c-bg-card)", overflowY: "auto", zIndex: 100 }}>
       {/* Header */}
       <div style={{
         display: "flex",
         alignItems: "center",
         padding: "16px 24px",
-        borderBottom: "1px solid #e5e8eb",
+        borderBottom: "1px solid var(--c-border)",
         position: "sticky",
         top: 0,
-        background: "#ffffff",
+        background: "var(--c-bg-card)",
         zIndex: 10,
       }}>
         <button
           onClick={onBack}
           style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px 4px 0", marginRight: 8 }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#191f28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: "#191f28", margin: 0 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, color: "var(--c-text-primary)", margin: 0 }}>
           약관 및 개인정보 처리방침
         </h1>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", borderBottom: "1px solid #e5e8eb", background: "#ffffff" }}>
+      <div style={{ display: "flex", borderBottom: "1px solid var(--c-border)", background: "var(--c-bg-card)" }}>
         {(["terms", "privacy"] as TermsTab[]).map((tab) => {
           const active = activeTab === tab;
           return (
@@ -48,7 +48,7 @@ export function TermsPage({ onBack }: TermsPageProps) {
                 padding: "14px 0",
                 fontSize: 14,
                 fontWeight: active ? 700 : 500,
-                color: active ? "#3182f6" : "#8b95a1",
+                color: active ? "var(--c-blue)" : "var(--c-text-secondary)",
                 background: "none",
                 border: "none",
                 borderBottom: active ? "2px solid #3182f6" : "2px solid transparent",
@@ -63,7 +63,7 @@ export function TermsPage({ onBack }: TermsPageProps) {
       </div>
 
       {/* Content */}
-      <div style={{ padding: "28px 24px 80px", color: "#333d4b", lineHeight: 1.75 }}>
+      <div style={{ padding: "28px 24px 80px", color: "var(--c-text-body)", lineHeight: 1.75 }}>
         {activeTab === "terms" ? <TermsContent /> : <PrivacyContent />}
       </div>
     </div>
@@ -72,19 +72,19 @@ export function TermsPage({ onBack }: TermsPageProps) {
 
 function ArticleTitle({ num, title }: { num: number; title: string }) {
   return (
-    <h2 style={{ fontSize: 15, fontWeight: 700, color: "#191f28", marginTop: 32, marginBottom: 10 }}>
+    <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--c-text-primary)", marginTop: 32, marginBottom: 10 }}>
       제{num}조 ({title})
     </h2>
   );
 }
 
 function Body({ children }: { children: React.ReactNode }) {
-  return <p style={{ fontSize: 14, color: "#333d4b", marginBottom: 8 }}>{children}</p>;
+  return <p style={{ fontSize: 14, color: "var(--c-text-body)", marginBottom: 8 }}>{children}</p>;
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h3 style={{ fontSize: 13, fontWeight: 600, color: "#6b7684", margin: "20px 0 8px", letterSpacing: "0.02em" }}>
+    <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--c-text-caption)", margin: "20px 0 8px", letterSpacing: "0.02em" }}>
       {children}
     </h3>
   );
@@ -94,7 +94,7 @@ function Ol({ items }: { items: React.ReactNode[] }) {
   return (
     <ol style={{ margin: "0 0 8px", paddingLeft: 20 }}>
       {items.map((item, i) => (
-        <li key={i} style={{ fontSize: 14, color: "#333d4b", marginBottom: 6 }}>{item}</li>
+        <li key={i} style={{ fontSize: 14, color: "var(--c-text-body)", marginBottom: 6 }}>{item}</li>
       ))}
     </ol>
   );
@@ -104,7 +104,7 @@ function Ul({ items }: { items: React.ReactNode[] }) {
   return (
     <ul style={{ margin: "0 0 8px", paddingLeft: 20 }}>
       {items.map((item, i) => (
-        <li key={i} style={{ fontSize: 14, color: "#333d4b", marginBottom: 4 }}>{item}</li>
+        <li key={i} style={{ fontSize: 14, color: "var(--c-text-body)", marginBottom: 4 }}>{item}</li>
       ))}
     </ul>
   );
@@ -113,8 +113,8 @@ function Ul({ items }: { items: React.ReactNode[] }) {
 function TermsContent() {
   return (
     <>
-      <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 4 }}>시행일: 2025년 6월 20일</p>
-      <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 24 }}>제공: 디어젤리 (dearjelly.official@gmail.com)</p>
+      <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 4 }}>시행일: 2025년 6월 20일</p>
+      <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 24 }}>제공: 디어젤리 (dearjelly.official@gmail.com)</p>
 
       <ArticleTitle num={1} title="목적" />
       <Body>
@@ -209,8 +209,8 @@ function TermsContent() {
 function PrivacyContent() {
   return (
     <>
-      <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 4 }}>시행일: 2025년 6월 20일</p>
-      <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 24 }}>제공: 디어젤리 (dearjelly.official@gmail.com)</p>
+      <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 4 }}>시행일: 2025년 6월 20일</p>
+      <p style={{ fontSize: 13, color: "var(--c-text-secondary)", marginBottom: 24 }}>제공: 디어젤리 (dearjelly.official@gmail.com)</p>
 
       <Body>
         디어젤리(이하 "회사")는 이용자의 개인정보를 중요하게 생각하며, 「개인정보 보호법」 등 관련 법령을 준수합니다. 이 방침은 서비스 이용 과정에서 수집하는 개인정보의 항목, 수집 목적, 보유 기간 등을 안내합니다.

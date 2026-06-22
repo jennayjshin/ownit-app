@@ -25,7 +25,7 @@ function ReviewPageSkeleton() {
       {/* 리스트 */}
       <div style={{ flex: 1, overflow: "hidden" }}>
         {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <div key={i} style={{ padding: "16px 24px", borderBottom: "1px solid #f2f4f6", display: "flex", alignItems: "center", gap: 12 }}>
+          <div key={i} style={{ padding: "16px 24px", borderBottom: "1px solid var(--c-divider)", display: "flex", alignItems: "center", gap: 12 }}>
             <Sk w={18} h={13} r={4} />
             <div style={{ flex: 1 }}>
               <Sk w="78%" h={15} r={5} mb={7} />
@@ -52,7 +52,7 @@ function highlight(text: string, query: string) {
   return (
     <>
       <span>{text.slice(0, idx)}</span>
-      <span style={{ color: "#3182f6", fontWeight: 600 }}>{text.slice(idx, idx + query.length)}</span>
+      <span style={{ color: "var(--c-blue)", fontWeight: 600 }}>{text.slice(idx, idx + query.length)}</span>
       <span>{text.slice(idx + query.length)}</span>
     </>
   );
@@ -146,7 +146,7 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
         <div style={{ position: "relative" }}>
           <svg
             width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="#b0b8c1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            stroke="var(--c-text-hint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
             style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
           >
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -159,8 +159,8 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
             style={{
               width: "100%", boxSizing: "border-box",
               padding: "10px 36px 10px 38px",
-              fontSize: 15, color: "#191f28",
-              background: "#f2f4f6", border: "none", borderRadius: 10,
+              fontSize: 15, color: "var(--c-text-primary)",
+              background: "var(--c-bg-input)", border: "none", borderRadius: 10,
               outline: "none",
             }}
           />
@@ -169,7 +169,7 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
               onClick={() => setSearchQuery("")}
               style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", padding: 4, cursor: "pointer", display: "flex", alignItems: "center" }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b0b8c1" strokeWidth="2.5" strokeLinecap="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-hint)" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
@@ -179,13 +179,13 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
 
       <div style={{ flex: 1, overflowY: "auto" }}>
         {list.length === 0 && (
-          <div style={{ padding: "48px 24px", textAlign: "center", color: "#8b95a1", fontSize: 15 }}>
+          <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--c-text-secondary)", fontSize: 15 }}>
             복습할 문장이 없어요
           </div>
         )}
 
         {filteredList.length === 0 && list.length > 0 && (
-          <div style={{ padding: "48px 24px", textAlign: "center", color: "#8b95a1", fontSize: 15 }}>
+          <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--c-text-secondary)", fontSize: 15 }}>
             검색 결과가 없어요
           </div>
         )}
@@ -193,16 +193,16 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
         {filteredList.map((item, index) => (
           <div
             key={item.sentence_id}
-            style={{ padding: "16px 24px", borderBottom: "1px solid #f2f4f6", display: "flex", alignItems: "center", gap: 12 }}
+            style={{ padding: "16px 24px", borderBottom: "1px solid var(--c-divider)", display: "flex", alignItems: "center", gap: 12 }}
           >
-            <span style={{ fontSize: 13, color: "#b0b8c1", minWidth: 20, textAlign: "center" }}>
+            <span style={{ fontSize: 13, color: "var(--c-text-hint)", minWidth: 20, textAlign: "center" }}>
               {index + 1}
             </span>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 15, fontWeight: 500, color: "#191f28", marginBottom: 2 }}>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "var(--c-text-primary)", marginBottom: 2 }}>
                 {highlight(item.sentences.english_expression, searchQuery)}
               </p>
-              <p style={{ fontSize: 13, color: "#8b95a1" }}>{highlight(item.sentences.korean_translation, searchQuery)}</p>
+              <p style={{ fontSize: 13, color: "var(--c-text-secondary)" }}>{highlight(item.sentences.korean_translation, searchQuery)}</p>
             </div>
             <button
               onClick={() => {
@@ -217,7 +217,7 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               )}
@@ -229,7 +229,7 @@ export function ReviewPage({ userId, onStartReview }: ReviewPageProps) {
         <div ref={bottomRef} style={{ height: 1 }} />
 
         {loadingMore && (
-          <div style={{ padding: "16px", textAlign: "center", color: "#8b95a1", fontSize: 13 }}>
+          <div style={{ padding: "16px", textAlign: "center", color: "var(--c-text-secondary)", fontSize: 13 }}>
             불러오는 중...
           </div>
         )}

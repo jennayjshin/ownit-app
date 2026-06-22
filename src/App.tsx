@@ -26,7 +26,7 @@ const DEFAULT_PROFILE = {
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "#3182f6" : "#8b95a1"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--c-blue)" : "var(--c-text-secondary)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
@@ -35,7 +35,7 @@ function HomeIcon({ active }: { active: boolean }) {
 
 function ReviewIcon({ active }: { active: boolean }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "#3182f6" : "#8b95a1"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--c-blue)" : "var(--c-text-secondary)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
     </svg>
@@ -44,7 +44,7 @@ function ReviewIcon({ active }: { active: boolean }) {
 
 function SettingsIcon({ active }: { active: boolean }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "#3182f6" : "#8b95a1"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--c-blue)" : "var(--c-text-secondary)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
@@ -65,9 +65,9 @@ function BottomTabBar({ activeTab, onTabChange }: { activeTab: Tab; onTabChange:
       left: 16,
       right: 16,
       height: 60,
-      background: "#ffffff",
+      background: "var(--c-bg-card)",
       borderRadius: 20,
-      boxShadow: "0 4px 20px rgba(25, 31, 40, 0.12)",
+      boxShadow: "0 4px 20px var(--c-shadow)",
       display: "flex",
       alignItems: "center",
     }}>
@@ -91,7 +91,7 @@ function BottomTabBar({ activeTab, onTabChange }: { activeTab: Tab; onTabChange:
           {tab === "home" && <HomeIcon active={activeTab === tab} />}
           {tab === "review" && <ReviewIcon active={activeTab === tab} />}
           {tab === "settings" && <SettingsIcon active={activeTab === tab} />}
-          <span style={{ fontSize: 11, color: activeTab === tab ? "#3182f6" : "#8b95a1", fontWeight: activeTab === tab ? 600 : 400 }}>
+          <span style={{ fontSize: 11, color: activeTab === tab ? "var(--c-blue)" : "var(--c-text-secondary)", fontWeight: activeTab === tab ? 600 : 400 }}>
             {TAB_LABELS[tab]}
           </span>
         </button>
@@ -106,7 +106,9 @@ function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(
+    !localStorage.getItem("ownit_onboarding_done")
+  );
   const [page, setPage] = useState<Page>("tabs");
   const [activeTab, setActiveTab] = useState<Tab>("home");
 
@@ -117,12 +119,11 @@ function App() {
   const [userEmail, setUserEmail] = useState<string>("");
 
   const isLoggingInRef = useRef(false);
+  const pendingOnboardingRef = useRef<OnboardingResult | null>(null);
 
   const setupUser = async (session: Session) => {
     const uid = session.user.id;
-    setUserId(uid);
     const key = session.user.user_metadata?.toss_user_key;
-    if (key) setTossUserKey(String(key));
 
     const { data: existingUser } = await supabase
       .from("users")
@@ -130,13 +131,8 @@ function App() {
       .eq("id", uid)
       .single();
 
-    if (existingUser) {
-      setStudyReason(existingUser.study_reason ?? DEFAULT_PROFILE.studyReason);
-      setDailyGoal(existingUser.daily_goal ?? DEFAULT_PROFILE.dailyGoal);
-      setPreferredCategories(existingUser.preferred_categories ?? DEFAULT_PROFILE.preferredCategories);
-      setPreferredDifficulties(existingUser.preferred_difficulties ?? DEFAULT_PROFILE.preferredDifficulties);
-      setUserEmail(existingUser.email ?? "");
-    } else {
+    if (!existingUser) {
+      // 신규 유저: users 행 생성 (실패 시 로그인 자체를 중단)
       const tossKey = session.user.user_metadata?.toss_user_key;
       try {
         await upsertUser({
@@ -145,19 +141,46 @@ function App() {
           study_reason: DEFAULT_PROFILE.studyReason,
           daily_goal: DEFAULT_PROFILE.dailyGoal,
           preferred_categories: DEFAULT_PROFILE.preferredCategories,
+          preferred_difficulties: DEFAULT_PROFILE.preferredDifficulties,
         });
-        setShowOnboarding(true);
       } catch (e: unknown) {
         const code = (e as { code?: string })?.code;
         if (code === "23505") {
-          // 다른 세션이 같은 toss_user_id를 사용 중 — 로그아웃 후 fresh 로그인 유도
           await supabase.auth.signOut();
-          setUserId(null);
-          setTossUserKey(null);
-          return;
+          return; // userId 미설정 상태로 종료
         }
         throw e;
       }
+    }
+
+    // users 행 존재 확정 이후 userId 설정
+    setUserId(uid);
+    if (key) setTossUserKey(String(key));
+
+    // 온보딩 pending 설정 적용 (fire-and-forget — 실패해도 로그인 차단하지 않음)
+    const pending = pendingOnboardingRef.current;
+    if (pending) {
+      pendingOnboardingRef.current = null;
+      setStudyReason(pending.studyReason);
+      setDailyGoal(pending.dailyGoal);
+      setPreferredCategories(pending.preferredCategories);
+      setPreferredDifficulties(pending.preferredDifficulties);
+      updateUser(uid, {
+        study_reason: pending.studyReason,
+        daily_goal: pending.dailyGoal,
+        preferred_categories: pending.preferredCategories,
+        preferred_difficulties: pending.preferredDifficulties,
+      }).catch((e) => console.error("[setupUser] pending save failed:", e));
+    } else if (existingUser) {
+      setStudyReason(existingUser.study_reason ?? DEFAULT_PROFILE.studyReason);
+      setDailyGoal(existingUser.daily_goal ?? DEFAULT_PROFILE.dailyGoal);
+      setPreferredCategories(existingUser.preferred_categories ?? DEFAULT_PROFILE.preferredCategories);
+      setPreferredDifficulties(existingUser.preferred_difficulties ?? DEFAULT_PROFILE.preferredDifficulties);
+      setUserEmail(existingUser.email ?? "");
+    }
+
+    if (existingUser || pending) {
+      setShowOnboarding(false);
     }
   };
 
@@ -227,7 +250,7 @@ function App() {
     }
   };
 
-  const devLogin = async () => {
+  const devLogin = async (): Promise<boolean> => {
     setIsLoggingIn(true);
     try {
       const res = await fetch(
@@ -244,29 +267,64 @@ function App() {
       if (otpErr) throw otpErr;
       if (!otpData.session?.user) throw new Error("세션 생성 실패");
       await setupUser(otpData.session);
+      return true;
     } catch (e) {
       console.error("[devLogin]", e);
       setAuthError("테스트 로그인 실패");
+      return false;
     } finally {
       setIsLoggingIn(false);
     }
   };
 
-  const handleOnboardingComplete = async (result: OnboardingResult) => {
-    if (!userId) return;
+  const finishOnboarding = () => {
+    localStorage.setItem("ownit_onboarding_done", "1");
+    setShowOnboarding(false);
+  };
+
+  const applyAndFinishOnboarding = async (result: OnboardingResult, uid: string) => {
     setStudyReason(result.studyReason);
     setDailyGoal(result.dailyGoal);
     setPreferredCategories(result.preferredCategories);
-    try {
-      await updateUser(userId, {
-        study_reason: result.studyReason,
-        daily_goal: result.dailyGoal,
-        preferred_categories: result.preferredCategories,
-      });
-    } catch (e) {
-      console.error("[onboarding save]", e);
+    setPreferredDifficulties(result.preferredDifficulties);
+    updateUser(uid, {
+      study_reason: result.studyReason,
+      daily_goal: result.dailyGoal,
+      preferred_categories: result.preferredCategories,
+      preferred_difficulties: result.preferredDifficulties,
+    }).catch((e) => console.error("[onboarding] save failed:", e));
+    finishOnboarding();
+  };
+
+  const handleOnboardingComplete = async (result: OnboardingResult) => {
+    setStudyReason(result.studyReason);
+    setDailyGoal(result.dailyGoal);
+    setPreferredCategories(result.preferredCategories);
+    setPreferredDifficulties(result.preferredDifficulties);
+
+    if (userId) {
+      // checkSession으로 이미 인증된 상태 — 직접 설정만 저장
+      await applyAndFinishOnboarding(result, userId);
+      return;
     }
-    setShowOnboarding(false);
+    pendingOnboardingRef.current = result;
+    const ok = await doLogin();
+    if (ok) finishOnboarding();
+  };
+
+  const handleDevLoginFromOnboarding = async (result: OnboardingResult) => {
+    setStudyReason(result.studyReason);
+    setDailyGoal(result.dailyGoal);
+    setPreferredCategories(result.preferredCategories);
+    setPreferredDifficulties(result.preferredDifficulties);
+
+    if (userId) {
+      await applyAndFinishOnboarding(result, userId);
+      return;
+    }
+    pendingOnboardingRef.current = result;
+    const ok = await devLogin();
+    if (ok) finishOnboarding();
   };
 
   const handleSettingsUpdate = (updates: SettingsUpdate) => {
@@ -277,23 +335,37 @@ function App() {
     if (updates.email !== undefined) setUserEmail(updates.email);
   };
 
-  if (!isAuthReady || isLoggingIn) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: "0 24px" }}>
-        <p style={{ color: "#8b95a1" }}>불러오는 중...</p>
-        {authError && <p style={{ color: "red", fontSize: 13, marginTop: 16, textAlign: "center" }}>{authError}</p>}
-      </div>
-    );
-  }
-
-
-  if (showOnboarding && userId) {
+  // dev-only: ?onboarding URL 파라미터로 온보딩 미리보기
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("onboarding") !== null) {
     return (
       <OnboardingPage
         defaultStudyReason={DEFAULT_PROFILE.studyReason}
         defaultDailyGoal={DEFAULT_PROFILE.dailyGoal}
-        onComplete={handleOnboardingComplete}
+        isLoggingIn={false}
+        onComplete={() => { window.location.href = "/"; }}
+        onDevLogin={() => { window.location.href = "/"; }}
       />
+    );
+  }
+
+  // 온보딩은 auth와 무관하게 먼저 표시 (로그인은 온보딩 마지막에 트리거)
+  if (showOnboarding) {
+    return (
+      <OnboardingPage
+        defaultStudyReason={DEFAULT_PROFILE.studyReason}
+        defaultDailyGoal={DEFAULT_PROFILE.dailyGoal}
+        isLoggingIn={isLoggingIn}
+        onComplete={handleOnboardingComplete}
+        onDevLogin={handleDevLoginFromOnboarding}
+      />
+    );
+  }
+
+  if (!isAuthReady) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: "0 24px" }}>
+        <p style={{ color: "var(--c-text-secondary)" }}>불러오는 중...</p>
+      </div>
     );
   }
 
@@ -349,7 +421,6 @@ function App() {
             Analytics.screen({ log_name: "study_card_screen", mode: "study" });
           }}
           onStartReview={() => setActiveTab("review")}
-          onDevLogin={devLogin}
         />
       </div>
       {userId && (
@@ -382,6 +453,8 @@ function App() {
                 setPreferredCategories(DEFAULT_PROFILE.preferredCategories);
                 setPreferredDifficulties(DEFAULT_PROFILE.preferredDifficulties);
                 setUserEmail("");
+                localStorage.removeItem("ownit_onboarding_done");
+                setShowOnboarding(true);
               }}
             />
           </div>

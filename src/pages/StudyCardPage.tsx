@@ -26,7 +26,7 @@ function highlightKey(text: string, key: string) {
   return (
     <>
       <span>{text.slice(0, idx)}</span>
-      <span style={{ color: "#3182f6" }}>{text.slice(idx, idx + key.length)}</span>
+      <span style={{ color: "var(--c-blue)" }}>{text.slice(idx, idx + key.length)}</span>
       <span>{text.slice(idx + key.length)}</span>
     </>
   );
@@ -195,7 +195,7 @@ export function StudyCardPage({
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-        <p style={{ color: "#8b95a1" }}>문장 불러오는 중...</p>
+        <p style={{ color: "var(--c-text-secondary)" }}>문장 불러오는 중...</p>
       </div>
     );
   }
@@ -205,12 +205,12 @@ export function StudyCardPage({
       <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px 100px" }}>
           <p style={{ fontSize: 48, marginBottom: 16 }}>🎉</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: "#191f28", marginBottom: 8 }}>오늘의 학습 완료!</p>
-          <p style={{ fontSize: 15, color: "#8b95a1" }}>
+          <p style={{ fontSize: 22, fontWeight: 700, color: "var(--c-text-primary)", marginBottom: 8 }}>오늘의 학습 완료!</p>
+          <p style={{ fontSize: 15, color: "var(--c-text-secondary)" }}>
             쉬워요 {easyCount}개 · 어려워요 {hardCount}개
           </p>
         </div>
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "16px 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom))", background: "#fff", display: "flex", gap: 12 }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "16px 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom))", background: "var(--c-bg-card)", display: "flex", gap: 12 }}>
           <Button size="xlarge" variant="weak" style={{ flex: 1 }} onClick={() => {
             Analytics.click({ button_name: "study_complete_exit", easy_count: easyCount, hard_count: hardCount, review_mode: reviewMode });
             onComplete();
@@ -234,7 +234,7 @@ export function StudyCardPage({
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       {/* 서브 헤더: 진행 카운터(중앙) | EN/KR 토글(우) */}
       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", height: 48, paddingLeft: 16, paddingRight: 8 }}>
-        <span style={{ fontSize: 17, color: "#8b95a1", fontWeight: 500 }}>
+        <span style={{ fontSize: 17, color: "var(--c-text-secondary)", fontWeight: 500 }}>
           {currentIndex + 1} / {sentences.length}
         </span>
         <button
@@ -253,7 +253,7 @@ export function StudyCardPage({
             cursor: "pointer",
             fontSize: 17,
             fontWeight: 500,
-            color: "#8b95a1",
+            color: "var(--c-text-secondary)",
           }}
         >
           {cardOrder === "english_first" ? "EN" : "KR"}
@@ -262,12 +262,12 @@ export function StudyCardPage({
 
       {/* 진행 바 + 스와이프 카운터 */}
       <div style={{ padding: "0 24px 12px" }}>
-        <div style={{ height: 2, background: "#e5e8eb", borderRadius: 2, marginBottom: 12 }}>
+        <div style={{ height: 2, background: "var(--c-border)", borderRadius: 2, marginBottom: 12 }}>
           <div style={{ height: "100%", width: `${progress}%`, background: "#3182f6", borderRadius: 2, transition: "width 0.3s ease" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: "#ff4d4f", background: "#fff1f0", borderRadius: 20, padding: "4px 14px", border: "1.5px solid #ffccc7" }}>{hardCount}</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#3182f6", background: "#e8f3ff", borderRadius: 20, padding: "4px 14px", border: "1.5px solid #91caff" }}>{easyCount}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--c-blue)", background: "var(--c-blue-tint)", borderRadius: 20, padding: "4px 14px", border: "1.5px solid #91caff" }}>{easyCount}</span>
         </div>
       </div>
 
@@ -281,13 +281,13 @@ export function StudyCardPage({
           onClick={handleTap}
           style={{
             flex: 1,
-            background: swipeHint === "easy" ? "#e8f3ff" : swipeHint === "hard" ? "#fff1f0" : "#ffffff",
-            border: "2px solid #e5e8eb",
+            background: swipeHint === "easy" ? "var(--c-blue-tint)" : swipeHint === "hard" ? "var(--c-red-tint)" : "var(--c-bg-card)",
+            border: "2px solid var(--c-border)",
             borderRadius: 16,
             display: "flex",
             flexDirection: "column",
             cursor: "pointer",
-            boxShadow: "0 1px 3px rgba(25,31,40,0.04)",
+            boxShadow: "0 1px 3px var(--c-shadow)",
             transition: "background 0.2s",
             overflow: "hidden",
           }}
@@ -299,21 +299,21 @@ export function StudyCardPage({
               const isFrontSide = !isFlipped;
               if (isFrontSide) {
                 return showEnglishFront ? (
-                  <p style={{ fontSize: 20, fontWeight: 600, color: "#191f28", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 20, fontWeight: 600, color: "var(--c-text-primary)", lineHeight: 1.6 }}>
                     {highlightKey(current.english_expression, current.key_expression)}
                   </p>
                 ) : (
-                  <p style={{ fontSize: 20, fontWeight: 600, color: "#191f28", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 20, fontWeight: 600, color: "var(--c-text-primary)", lineHeight: 1.6 }}>
                     {current.korean_translation}
                   </p>
                 );
               } else {
                 return showEnglishFront ? (
-                  <p style={{ fontSize: 20, fontWeight: 600, color: "#191f28", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 20, fontWeight: 600, color: "var(--c-text-primary)", lineHeight: 1.6 }}>
                     {current.korean_translation}
                   </p>
                 ) : (
-                  <p style={{ fontSize: 20, fontWeight: 600, color: "#191f28", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 20, fontWeight: 600, color: "var(--c-text-primary)", lineHeight: 1.6 }}>
                     {highlightKey(current.english_expression, current.key_expression)}
                   </p>
                 );
@@ -324,7 +324,7 @@ export function StudyCardPage({
           {/* 카드 하단 버튼 3개 */}
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "12px 24px 20px", borderTop: "1px solid #f2f4f6" }}
+            style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "12px 24px 20px", borderTop: "1px solid var(--c-divider)" }}
           >
             {/* 1. 이전 카드 */}
             <button
@@ -332,7 +332,7 @@ export function StudyCardPage({
               disabled={currentIndex === 0}
               style={{ background: "none", border: "none", padding: 12, cursor: currentIndex === 0 ? "default" : "pointer", opacity: currentIndex === 0 ? 0.25 : 1, display: "flex", alignItems: "center" }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
               </svg>
@@ -378,7 +378,7 @@ export function StudyCardPage({
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               )}
