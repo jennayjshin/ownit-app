@@ -7,6 +7,8 @@ export type Category =
   | 'Emotions & Opinions'
   | 'Email & Phone';
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
 export interface Sentence {
   id: number;
   english_expression: string;
@@ -14,6 +16,7 @@ export interface Sentence {
   korean_translation: string;
   category: Category;
   source: string;
+  difficulty: Difficulty;
 }
 
 export interface User {
@@ -23,6 +26,7 @@ export interface User {
   study_reason: string;
   daily_goal: number;
   preferred_categories: Category[];
+  preferred_difficulties: Difficulty[];
   created_at: string;
 }
 

@@ -7,9 +7,11 @@ import { StudyCardPage } from "./pages/StudyCardPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { SettingsPage, AllCompletePage } from "./pages/SettingsPage";
 import type { SettingsUpdate } from "./pages/SettingsPage";
+import { OnboardingPage } from "./pages/OnboardingPage";
+import type { OnboardingResult } from "./pages/OnboardingPage";
 import { supabase } from "./lib/supabase";
-import { upsertUser } from "./lib/db";
-import type { Category } from "./types/database";
+import { upsertUser, updateUser } from "./lib/db";
+import type { Category, Difficulty } from "./types/database";
 import type { Session } from "@supabase/supabase-js";
 
 type Tab = "home" | "review" | "settings";
@@ -19,6 +21,7 @@ const DEFAULT_PROFILE = {
   studyReason: "원어민과 자유롭게 수다 떠는 그날까지",
   dailyGoal: 5,
   preferredCategories: [] as Category[],
+  preferredDifficulties: [] as Difficulty[],
 };
 
 function HomeIcon({ active }: { active: boolean }) {
@@ -103,12 +106,14 @@ function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [page, setPage] = useState<Page>("tabs");
   const [activeTab, setActiveTab] = useState<Tab>("home");
 
   const [studyReason, setStudyReason] = useState(DEFAULT_PROFILE.studyReason);
   const [dailyGoal, setDailyGoal] = useState(DEFAULT_PROFILE.dailyGoal);
   const [preferredCategories, setPreferredCategories] = useState<Category[]>(DEFAULT_PROFILE.preferredCategories);
+  const [preferredDifficulties, setPreferredDifficulties] = useState<Difficulty[]>(DEFAULT_PROFILE.preferredDifficulties);
   const [userEmail, setUserEmail] = useState<string>("");
 
   const isLoggingInRef = useRef(false);
@@ -129,6 +134,7 @@ function App() {
       setStudyReason(existingUser.study_reason ?? DEFAULT_PROFILE.studyReason);
       setDailyGoal(existingUser.daily_goal ?? DEFAULT_PROFILE.dailyGoal);
       setPreferredCategories(existingUser.preferred_categories ?? DEFAULT_PROFILE.preferredCategories);
+      setPreferredDifficulties(existingUser.preferred_difficulties ?? DEFAULT_PROFILE.preferredDifficulties);
       setUserEmail(existingUser.email ?? "");
     } else {
       const tossKey = session.user.user_metadata?.toss_user_key;
@@ -140,6 +146,7 @@ function App() {
           daily_goal: DEFAULT_PROFILE.dailyGoal,
           preferred_categories: DEFAULT_PROFILE.preferredCategories,
         });
+        setShowOnboarding(true);
       } catch (e: unknown) {
         const code = (e as { code?: string })?.code;
         if (code === "23505") {
@@ -245,10 +252,28 @@ function App() {
     }
   };
 
+  const handleOnboardingComplete = async (result: OnboardingResult) => {
+    if (!userId) return;
+    setStudyReason(result.studyReason);
+    setDailyGoal(result.dailyGoal);
+    setPreferredCategories(result.preferredCategories);
+    try {
+      await updateUser(userId, {
+        study_reason: result.studyReason,
+        daily_goal: result.dailyGoal,
+        preferred_categories: result.preferredCategories,
+      });
+    } catch (e) {
+      console.error("[onboarding save]", e);
+    }
+    setShowOnboarding(false);
+  };
+
   const handleSettingsUpdate = (updates: SettingsUpdate) => {
     if (updates.study_reason !== undefined) setStudyReason(updates.study_reason);
     if (updates.daily_goal !== undefined) setDailyGoal(updates.daily_goal);
     if (updates.preferred_categories !== undefined) setPreferredCategories(updates.preferred_categories);
+    if (updates.preferred_difficulties !== undefined) setPreferredDifficulties(updates.preferred_difficulties);
     if (updates.email !== undefined) setUserEmail(updates.email);
   };
 
@@ -262,6 +287,16 @@ function App() {
   }
 
 
+  if (showOnboarding && userId) {
+    return (
+      <OnboardingPage
+        defaultStudyReason={DEFAULT_PROFILE.studyReason}
+        defaultDailyGoal={DEFAULT_PROFILE.dailyGoal}
+        onComplete={handleOnboardingComplete}
+      />
+    );
+  }
+
   if (page === "all-complete") {
     return <AllCompletePage onBack={() => setPage("tabs")} />;
   }
@@ -272,6 +307,7 @@ function App() {
         userId={userId}
         dailyGoal={dailyGoal}
         preferredCategories={preferredCategories}
+        preferredDifficulties={preferredDifficulties}
         onComplete={() => setPage("tabs")}
         onBack={() => setPage("tabs")}
         onAllComplete={() => setPage("all-complete")}
@@ -285,6 +321,7 @@ function App() {
         userId={userId}
         dailyGoal={dailyGoal}
         preferredCategories={preferredCategories}
+        preferredDifficulties={preferredDifficulties}
         reviewMode
         onComplete={() => { setPage("tabs"); setActiveTab("review"); }}
         onBack={() => { setPage("tabs"); setActiveTab("review"); }}
@@ -333,6 +370,7 @@ function App() {
               studyReason={studyReason}
               dailyGoal={dailyGoal}
               preferredCategories={preferredCategories}
+              preferredDifficulties={preferredDifficulties}
               onUpdate={handleSettingsUpdate}
               onWithdraw={() => {
                 setUserId(null);
@@ -342,6 +380,7 @@ function App() {
                 setStudyReason(DEFAULT_PROFILE.studyReason);
                 setDailyGoal(DEFAULT_PROFILE.dailyGoal);
                 setPreferredCategories(DEFAULT_PROFILE.preferredCategories);
+                setPreferredDifficulties(DEFAULT_PROFILE.preferredDifficulties);
                 setUserEmail("");
               }}
             />

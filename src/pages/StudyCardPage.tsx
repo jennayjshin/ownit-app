@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Top } from "@toss/tds-mobile";
 import { Analytics } from "@apps-in-toss/web-framework";
 import { getRandomSentences, getAllStudiedSentences, updateProgressAfterReview, upsertProgress, toggleFavorite } from "../lib/db";
-import type { Category, Sentence } from "../types/database";
+import type { Category, Difficulty, Sentence } from "../types/database";
 import { loadCardOrder, CARD_ORDER_KEY } from "./SettingsPage";
 import type { CardOrder } from "./SettingsPage";
 
@@ -10,6 +10,7 @@ interface StudyCardPageProps {
   userId: string;
   dailyGoal: number;
   preferredCategories: Category[];
+  preferredDifficulties: Difficulty[];
   reviewMode?: boolean;
   onComplete: () => void;
   onBack: () => void;
@@ -35,6 +36,7 @@ export function StudyCardPage({
   userId,
   dailyGoal,
   preferredCategories,
+  preferredDifficulties,
   reviewMode = false,
   onComplete,
   onBack,
@@ -82,7 +84,7 @@ export function StudyCardPage({
           data.forEach((d) => favoriteMap.current.set(d.sentence_id, d.is_favorite));
           return data.map((d) => d.sentences);
         })
-      : getRandomSentences(userId, preferredCategories, dailyGoal);
+      : getRandomSentences(userId, preferredCategories, preferredDifficulties, dailyGoal);
     fetcher
       .then((data) => {
         setSentences(data);

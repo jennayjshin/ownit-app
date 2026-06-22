@@ -1,11 +1,17 @@
 import { supabase } from './supabase';
-import type { Category, Sentence, User, UserProgress, UserProgressWithSentence } from '../types/database';
+import type { Category, Difficulty, Sentence, User, UserProgress, UserProgressWithSentence } from '../types/database';
 
 // Sentences
-export async function getRandomSentences(userId: string, categories: Category[], limit: number): Promise<Sentence[]> {
+export async function getRandomSentences(
+  userId: string,
+  categories: Category[],
+  difficulties: Difficulty[],
+  limit: number,
+): Promise<Sentence[]> {
   const { data, error } = await supabase.rpc('get_random_sentences', {
     p_user_id: userId,
     p_categories: categories,
+    p_difficulties: difficulties,
     p_limit: limit,
   });
   if (error) throw error;

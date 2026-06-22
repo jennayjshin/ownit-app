@@ -3,7 +3,7 @@ import { requestNotificationAgreement, Analytics } from "@apps-in-toss/web-frame
 import { closeView } from "@apps-in-toss/web-framework";
 import { updateUser } from "../lib/db";
 import { supabase } from "../lib/supabase";
-import type { Category } from "../types/database";
+import type { Category, Difficulty } from "../types/database";
 import { AlertModal } from "../components/AlertModal";
 import { TermsPage } from "./TermsPage";
 
@@ -67,6 +67,7 @@ export interface SettingsUpdate {
   study_reason?: string;
   daily_goal?: number;
   preferred_categories?: Category[];
+  preferred_difficulties?: Difficulty[];
   email?: string;
 }
 
@@ -76,6 +77,7 @@ interface SettingsPageProps {
   studyReason: string;
   dailyGoal: number;
   preferredCategories: Category[];
+  preferredDifficulties: Difficulty[];
   onUpdate: (updates: SettingsUpdate) => void;
   onWithdraw: () => void;
 }
@@ -86,6 +88,7 @@ export function SettingsPage({
   studyReason,
   dailyGoal,
   preferredCategories,
+  preferredDifficulties,
   onUpdate,
   onWithdraw,
 }: SettingsPageProps) {
@@ -127,6 +130,7 @@ export function SettingsPage({
       if (updates.study_reason !== undefined) supabaseUpdates.study_reason = updates.study_reason;
       if (updates.daily_goal !== undefined) supabaseUpdates.daily_goal = updates.daily_goal;
       if (updates.preferred_categories !== undefined) supabaseUpdates.preferred_categories = updates.preferred_categories;
+      if (updates.preferred_difficulties !== undefined) supabaseUpdates.preferred_difficulties = updates.preferred_difficulties;
       await updateUser(userId, supabaseUpdates as Parameters<typeof updateUser>[1]);
       onUpdate(updates);
     } catch (e) {
@@ -158,6 +162,13 @@ export function SettingsPage({
       ? preferredCategories.filter((c) => c !== cat)
       : [...preferredCategories, cat];
     save({ preferred_categories: next }, "category");
+  };
+
+  const handleDifficultyToggle = (diff: Difficulty) => {
+    const next = preferredDifficulties.includes(diff)
+      ? preferredDifficulties.filter((d) => d !== diff)
+      : [...preferredDifficulties, diff];
+    save({ preferred_difficulties: next }, "difficulty");
   };
 
   const saveNotification = (updates: Partial<NotificationSettings>) => {
@@ -394,6 +405,42 @@ export function SettingsPage({
                 }}
               >
                 {label}
+              </button>
+            );
+          })}
+        </div>
+      </SettingsSection>
+
+      {/* 난이도 */}
+      <SettingsSection title="난이도">
+        <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 12 }}>
+          {preferredDifficulties.length === 0
+            ? "미선택 시 모든 난이도를 랜덤으로 학습해요"
+            : `${preferredDifficulties.length}개 선택됨`}
+        </p>
+        <div style={{ display: "flex", gap: 8 }}>
+          {(["easy", "medium", "hard"] as Difficulty[]).map((diff) => {
+            const selected = preferredDifficulties.includes(diff);
+            const labelMap: Record<Difficulty, string> = { easy: "쉬움", medium: "보통", hard: "어려움" };
+            return (
+              <button
+                key={diff}
+                onClick={() => handleDifficultyToggle(diff)}
+                disabled={savingKey === "difficulty"}
+                style={{
+                  flex: 1,
+                  padding: "13px 0",
+                  fontSize: 14,
+                  fontWeight: selected ? 700 : 400,
+                  color: selected ? "#3182f6" : "#6b7684",
+                  background: selected ? "#e8f3ff" : "#f2f4f6",
+                  border: `1.5px solid ${selected ? "#3182f6" : "transparent"}`,
+                  borderRadius: 10,
+                  cursor: "pointer",
+                  transition: "all 120ms ease",
+                }}
+              >
+                {labelMap[diff]}
               </button>
             );
           })}
