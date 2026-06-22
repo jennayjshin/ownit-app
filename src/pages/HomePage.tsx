@@ -81,6 +81,8 @@ export function HomePage({
 
   useEffect(() => {
     if (!userId) {
+      setStudiedCount(0);
+      setRecentList([]);
       setLoading(false);
       return;
     }
