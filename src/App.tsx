@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { appLogin, TossAds, Analytics } from "@apps-in-toss/web-framework";
+import { appLogin, Analytics } from "@apps-in-toss/web-framework";
 import { HomePage } from "./pages/HomePage";
 import { StudyCardPage } from "./pages/StudyCardPage";
 import { ReviewPage } from "./pages/ReviewPage";
@@ -108,13 +108,6 @@ function App() {
   const [preferredCategories, setPreferredCategories] = useState<Category[]>(DEFAULT_PROFILE.preferredCategories);
   const [userEmail, setUserEmail] = useState<string>("");
 
-  useEffect(() => {
-    TossAds.initialize({
-      callbacks: {
-        onInitializationFailed: (e) => console.error("[TossAds]", e),
-      },
-    });
-  }, []);
 
   useEffect(() => {
     async function initAuth() {

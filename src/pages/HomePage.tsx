@@ -86,36 +86,50 @@ export function HomePage({
 
   useEffect(() => {
     if (!bannerRef.current) return;
-    const result = TossAds.attachBanner(
-      "ait.v2.live.5d38d0c155a6400e",
-      bannerRef.current,
-      {
-        theme: "auto",
-        variant: "expanded",
-        callbacks: {
-          onNoFill: () => setShowBanner(false),
-          onAdFailedToRender: () => setShowBanner(false),
-        },
-      }
-    );
+    if (!TossAds.initialize.isSupported()) {
+      setShowBanner(false);
+      return;
+    }
 
-    // 광고가 실제로 DOM에 그려졌을 때 impression 이벤트 발화
+    let attachedResult: { destroy: () => void } | undefined;
     const observer = new MutationObserver(() => {
       if (bannerRef.current?.childElementCount) {
         trackAdImpression();
         observer.disconnect();
       }
     });
-    observer.observe(bannerRef.current, { childList: true });
 
-    // attachBanner may inject children synchronously before observe() is registered
-    if (bannerRef.current.childElementCount) {
-      trackAdImpression();
-      observer.disconnect();
-    }
+    TossAds.initialize({
+      callbacks: {
+        onInitialized: () => {
+          if (!bannerRef.current) return;
+          attachedResult = TossAds.attachBanner(
+            "ait.v2.live.5d38d0c155a6400e",
+            bannerRef.current,
+            {
+              theme: "auto",
+              variant: "expanded",
+              callbacks: {
+                onNoFill: () => setShowBanner(false),
+                onAdFailedToRender: () => setShowBanner(false),
+              },
+            }
+          );
+          observer.observe(bannerRef.current, { childList: true });
+          if (bannerRef.current.childElementCount) {
+            trackAdImpression();
+            observer.disconnect();
+          }
+        },
+        onInitializationFailed: (e) => {
+          console.error("[TossAds]", e);
+          setShowBanner(false);
+        },
+      },
+    });
 
     return () => {
-      result.destroy();
+      attachedResult?.destroy();
       observer.disconnect();
     };
   }, []);
