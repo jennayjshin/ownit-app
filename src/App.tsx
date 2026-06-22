@@ -132,13 +132,25 @@ function App() {
       setUserEmail(existingUser.email ?? "");
     } else {
       const tossKey = session.user.user_metadata?.toss_user_key;
-      await upsertUser({
-        id: uid,
-        toss_user_id: tossKey ? String(tossKey) : uid,
-        study_reason: DEFAULT_PROFILE.studyReason,
-        daily_goal: DEFAULT_PROFILE.dailyGoal,
-        preferred_categories: DEFAULT_PROFILE.preferredCategories,
-      });
+      try {
+        await upsertUser({
+          id: uid,
+          toss_user_id: tossKey ? String(tossKey) : uid,
+          study_reason: DEFAULT_PROFILE.studyReason,
+          daily_goal: DEFAULT_PROFILE.dailyGoal,
+          preferred_categories: DEFAULT_PROFILE.preferredCategories,
+        });
+      } catch (e: unknown) {
+        const code = (e as { code?: string })?.code;
+        if (code === "23505") {
+          // 다른 세션이 같은 toss_user_id를 사용 중 — 로그아웃 후 fresh 로그인 유도
+          await supabase.auth.signOut();
+          setUserId(null);
+          setTossUserKey(null);
+          return;
+        }
+        throw e;
+      }
     }
   };
 
