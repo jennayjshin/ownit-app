@@ -85,6 +85,7 @@ export function HomePage({
   }, [userId]);
 
   useEffect(() => {
+    if (loading) return;
     if (!bannerRef.current) return;
     if (!TossAds.initialize.isSupported()) {
       setShowBanner(false);
@@ -132,7 +133,7 @@ export function HomePage({
       attachedResult?.destroy();
       observer.disconnect();
     };
-  }, []);
+  }, [loading]);
 
   if (loading) return <HomePageSkeleton />;
 
