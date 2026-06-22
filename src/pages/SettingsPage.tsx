@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { requestNotificationAgreement, Analytics } from "@apps-in-toss/web-framework";
+import { closeView } from "@apps-in-toss/web-framework";
 import { updateUser } from "../lib/db";
 import { supabase } from "../lib/supabase";
 import type { Category } from "../types/database";
@@ -179,6 +180,7 @@ export function SettingsPage({
 
       await supabase.auth.signOut();
       onWithdraw();
+      await closeView();
     } catch (e) {
       console.error("[withdraw]", e);
       setAlertMessage("탈퇴 처리 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
