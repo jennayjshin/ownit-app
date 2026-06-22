@@ -266,8 +266,8 @@ export function StudyCardPage({
           <div style={{ height: "100%", width: `${progress}%`, background: "#3182f6", borderRadius: 2, transition: "width 0.3s ease" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#ff4d4f", background: "#fff1f0", borderRadius: 20, padding: "4px 14px", border: "1.5px solid #ffccc7" }}>{hardCount}</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--c-blue)", background: "var(--c-blue-tint)", borderRadius: 20, padding: "4px 14px", border: "1.5px solid #91caff" }}>{easyCount}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#ff4d4f", background: "var(--c-red-tint)", borderRadius: 20, padding: "4px 14px", border: "1.5px solid rgba(255,77,79,0.3)" }}>{hardCount}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--c-blue)", background: "var(--c-blue-tint)", borderRadius: 20, padding: "4px 14px", border: "1.5px solid rgba(49,130,246,0.3)" }}>{easyCount}</span>
         </div>
       </div>
 
