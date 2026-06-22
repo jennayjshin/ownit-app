@@ -76,6 +76,7 @@ interface SettingsPageProps {
   dailyGoal: number;
   preferredCategories: Category[];
   onUpdate: (updates: SettingsUpdate) => void;
+  onWithdraw: () => void;
 }
 
 export function SettingsPage({
@@ -85,6 +86,7 @@ export function SettingsPage({
   dailyGoal,
   preferredCategories,
   onUpdate,
+  onWithdraw,
 }: SettingsPageProps) {
   const [editingReason, setEditingReason] = useState(false);
   const [reasonDraft, setReasonDraft] = useState(studyReason);
@@ -92,6 +94,8 @@ export function SettingsPage({
   const [notification, setNotification] = useState<NotificationSettings>(loadNotification);
   const [isRequestingNotif, setIsRequestingNotif] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const notifTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showTerms, setShowTerms] = useState(false);
   const [showFinalComplete, setShowFinalComplete] = useState(false);
@@ -159,6 +163,29 @@ export function SettingsPage({
     const next = { ...notification, ...updates };
     setNotification(next);
     localStorage.setItem("ownit_notification", JSON.stringify(next));
+  };
+
+  const handleWithdraw = async () => {
+    setIsWithdrawing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("세션 없음");
+
+      const { error } = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+
+      await supabase.auth.signOut();
+      onWithdraw();
+    } catch (e) {
+      console.error("[withdraw]", e);
+      setAlertMessage("탈퇴 처리 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsWithdrawing(false);
+      setShowWithdrawConfirm(false);
+    }
   };
 
   const sendRoutineNotification = async (key: string, hour: string, minute: string) => {
@@ -490,9 +517,47 @@ export function SettingsPage({
         <ListRow label="의견 보내기" onClick={() => setShowFeedback(true)} />
       </SettingsSection>
 
-      <div style={{ textAlign: "center", padding: "20px 0 8px", color: "#8b95a1", fontSize: 12 }}>
+      {/* 탈퇴하기 */}
+      <div style={{ padding: "8px 24px 40px", textAlign: "center" }}>
+        <button
+          onClick={() => setShowWithdrawConfirm(true)}
+          style={{ background: "none", border: "none", fontSize: 13, color: "#b0b8c1", cursor: "pointer", textDecoration: "underline" }}
+        >
+          탈퇴하기
+        </button>
+      </div>
+
+      <div style={{ textAlign: "center", padding: "0 0 8px", color: "#8b95a1", fontSize: 12 }}>
         온잇(OwnIt) v0.1.0
       </div>
+
+      {/* 탈퇴 확인 모달 */}
+      {showWithdrawConfirm && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(25,31,40,0.5)" }}>
+          <div style={{ background: "#fff", borderRadius: 20, padding: "28px 24px 20px", width: "calc(100% - 64px)", maxWidth: 320 }}>
+            <p style={{ fontSize: 17, fontWeight: 700, color: "#191f28", textAlign: "center", marginBottom: 12 }}>정말 탈퇴하시겠어요?</p>
+            <p style={{ fontSize: 14, color: "#6b7684", lineHeight: 1.65, textAlign: "center", marginBottom: 24 }}>
+              지금까지의 학습 기록이 모두 삭제되며{"\n"}복구할 수 없어요.
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setShowWithdrawConfirm(false)}
+                disabled={isWithdrawing}
+                style={{ flex: 1, padding: "14px 0", background: "#f2f4f6", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "#333d4b", cursor: "pointer" }}
+              >
+                취소
+              </button>
+              <button
+                onClick={handleWithdraw}
+                disabled={isWithdrawing}
+                style={{ flex: 1, padding: "14px 0", background: "#ff4d4f", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "#fff", cursor: "pointer", opacity: isWithdrawing ? 0.6 : 1 }}
+              >
+                {isWithdrawing ? "처리 중..." : "탈퇴"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -296,6 +296,16 @@ function App() {
               dailyGoal={dailyGoal}
               preferredCategories={preferredCategories}
               onUpdate={handleSettingsUpdate}
+              onWithdraw={() => {
+                setUserId(null);
+                setTossUserKey(null);
+                setPage("tabs");
+                setActiveTab("home");
+                setStudyReason(DEFAULT_PROFILE.studyReason);
+                setDailyGoal(DEFAULT_PROFILE.dailyGoal);
+                setPreferredCategories(DEFAULT_PROFILE.preferredCategories);
+                setUserEmail("");
+              }}
             />
           </div>
         </>
